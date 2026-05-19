@@ -1,0 +1,15 @@
+{
+  "jobTitle": "Senior Frontend Engineer",
+  "company": "Example Labs",
+  "requiredSkills": ["TypeScript", "React", "Next.js"],
+  "preferredSkills": ["Tailwind CSS", "GraphQL"],
+  "responsibilities": [
+    "Build accessible UI for customer dashboards.",
+    "Collaborate with design on component systems."
+  ],
+  "qualifications": ["5+ years professional web development", "Strong communication skills"],
+  "tools": ["GitHub", "Figma", "Vercel"],
+  "keywords": ["design system", "performance", "accessibility"],
+  "seniorityLevel": "senior",
+  "domainSignals": ["B2B SaaS", "analytics"]
+}

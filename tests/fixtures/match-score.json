@@ -1,0 +1,9 @@
+{
+  "overallScore": 62,
+  "skillCoverageScore": 70,
+  "responsibilityAlignmentScore": 58,
+  "keywordScore": 55,
+  "seniorityScore": 72,
+  "criticalMissingRequirements": ["Next.js production experience called out in JD"],
+  "explanation": "Solid TypeScript/React overlap; JD emphasizes Next.js and design systems more than the resume states explicitly."
+}

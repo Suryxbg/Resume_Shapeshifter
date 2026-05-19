@@ -1,0 +1,35 @@
+{
+  "contact": {
+    "name": "Taylor Example",
+    "email": "dev@example.com",
+    "location": "Remote"
+  },
+  "summary": "Software engineer focused on reliable web systems and clear APIs.",
+  "skills": ["TypeScript", "React", "Node.js", "PostgreSQL"],
+  "experience": [
+    {
+      "company": "Acme Corp",
+      "title": "Senior Software Engineer",
+      "startDate": "2021-03",
+      "endDate": "Present",
+      "bullets": [
+        "Led migration of a billing service to TypeScript with zero customer-facing incidents.",
+        "Reduced median API latency by 20% through caching and query tuning."
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Resume tooling",
+      "description": "Personal project exploring JD-to-resume workflows."
+    }
+  ],
+  "education": [
+    {
+      "degree": "B.S. Computer Science",
+      "institution": "State University",
+      "year": "2018"
+    }
+  ],
+  "certifications": []
+}

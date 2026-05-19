@@ -1,0 +1,20 @@
+{
+  "gaps": [
+    {
+      "name": "Next.js depth",
+      "importance": "high",
+      "jdEvidence": "Required: Next.js for customer-facing dashboards.",
+      "resumeEvidence": "Resume lists React and Node but does not mention Next.js.",
+      "suggestedAction": "Add only if you have shipped Next.js in production; otherwise prepare to discuss closest experience.",
+      "canSafelyAdd": false
+    },
+    {
+      "name": "GraphQL",
+      "importance": "low",
+      "jdEvidence": "Preferred: GraphQL APIs.",
+      "resumeEvidence": "No GraphQL mentioned.",
+      "suggestedAction": "Mention in skills if you have used it; otherwise leave out.",
+      "canSafelyAdd": false
+    }
+  ]
+}

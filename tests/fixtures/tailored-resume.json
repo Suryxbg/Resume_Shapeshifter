@@ -1,0 +1,28 @@
+{
+  "tailoredSummary": "Software engineer with strong TypeScript and React experience, shipping reliable web systems and performance-minded APIs.",
+  "tailoredSkills": ["TypeScript", "React", "Next.js", "Node.js", "PostgreSQL"],
+  "tailoredExperience": [
+    {
+      "company": "Acme Corp",
+      "title": "Senior Software Engineer",
+      "bullets": [
+        {
+          "original": "Led migration of a billing service to TypeScript with zero customer-facing incidents.",
+          "tailored": "Led a customer billing migration to TypeScript in a Next.js-adjacent stack with zero customer-facing incidents.",
+          "changeReason": "Surface TypeScript leadership in language closer to the JD without inventing new tools.",
+          "keywordsAddressed": ["TypeScript", "React ecosystem"],
+          "confidence": "high",
+          "riskFlag": ""
+        },
+        {
+          "original": "Reduced median API latency by 20% through caching and query tuning.",
+          "tailored": "Cut median API latency by 20% via caching and PostgreSQL query tuning for dashboard workloads.",
+          "changeReason": "Tie latency work to data stores mentioned implicitly in senior web roles.",
+          "keywordsAddressed": ["performance", "PostgreSQL"],
+          "confidence": "medium",
+          "riskFlag": ""
+        }
+      ]
+    }
+  ]
+}
