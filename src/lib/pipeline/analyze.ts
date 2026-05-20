@@ -11,16 +11,30 @@ import { logPipelineStage } from "@/lib/pipeline-logger";
 import { preprocessMatchScore } from "@/lib/llm-preprocess";
 import { createRun, patchTailoringRun } from "@/lib/run-store";
 import { capInputText } from "@/lib/text-limits";
+import { z } from "zod";
 import {
   GapAnalysisSchema,
   JobDescriptionProfileSchema,
   MatchScoreSchema,
   ResumeProfileSchema,
 } from "@/schemas";
-import { buildGapAnalysisMessages } from "@/prompts/gap-analysis";
-import { buildJdExtractionMessages } from "@/prompts/jd-extraction";
-import { buildMatchScoringMessages } from "@/prompts/match-scoring";
-import { buildResumeParserMessages } from "@/prompts/resume-parser";
+import { buildCombinedAnalyzeMessages } from "@/prompts/combined-analyze";
+
+const CombinedAnalyzeSchema = z.object({
+  resumeProfile: ResumeProfileSchema,
+  jobDescriptionProfile: JobDescriptionProfileSchema,
+  matchOriginal: MatchScoreSchema,
+  gapAnalysis: GapAnalysisSchema,
+});
+
+function preprocessCombinedAnalyze(raw: unknown): unknown {
+  if (typeof raw !== "object" || raw === null) return raw;
+  const o = raw as Record<string, unknown>;
+  if (o.matchOriginal) {
+    o.matchOriginal = preprocessMatchScore(o.matchOriginal);
+  }
+  return o;
+}
 
 async function timed<T>(
   tailoringRunId: string,
@@ -92,47 +106,16 @@ export async function runAnalyzePipeline(input: {
     };
   }
 
-  const [resumeProfile, jobDescriptionProfile] = await Promise.all([
-    timed(runId, "analyze.resume", mode, () =>
-      completeJson({
-        messages: buildResumeParserMessages(resumeText),
-        schema: ResumeProfileSchema,
-        schemaHint: "ResumeProfile",
-      })
-    ),
-    timed(runId, "analyze.jd", mode, () =>
-      completeJson({
-        messages: buildJdExtractionMessages(jdText),
-        schema: JobDescriptionProfileSchema,
-        schemaHint: "JobDescriptionProfile",
-      })
-    ),
-  ]);
+  const combined = await timed(runId, "analyze.combined", mode, () =>
+    completeJson({
+      messages: buildCombinedAnalyzeMessages(resumeText, jdText),
+      schema: CombinedAnalyzeSchema,
+      schemaHint: "CombinedAnalyze",
+      preprocess: preprocessCombinedAnalyze,
+    })
+  );
 
-  const resumeJson = JSON.stringify(resumeProfile);
-  const jdJson = JSON.stringify(jobDescriptionProfile);
-
-  const [matchOriginal, gapAnalysis] = await Promise.all([
-    timed(runId, "analyze.match", mode, () =>
-      completeJson({
-        messages: buildMatchScoringMessages({
-          resumeJson,
-          jdJson,
-          label: "original resume",
-        }),
-        schema: MatchScoreSchema,
-        schemaHint: "MatchScore",
-        preprocess: preprocessMatchScore,
-      })
-    ),
-    timed(runId, "analyze.gaps", mode, () =>
-      completeJson({
-        messages: buildGapAnalysisMessages({ resumeJson, jdJson }),
-        schema: GapAnalysisSchema,
-        schemaHint: "GapAnalysis",
-      })
-    ),
-  ]);
+  const { resumeProfile, jobDescriptionProfile, matchOriginal, gapAnalysis } = combined;
 
   patchTailoringRun(runId, {
     resumeProfile,

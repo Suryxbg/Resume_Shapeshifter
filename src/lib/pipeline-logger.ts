@@ -3,9 +3,11 @@ export type PipelineStage =
   | "analyze.resume"
   | "analyze.match"
   | "analyze.gaps"
+  | "analyze.combined"
   | "tailor.rewrite"
   | "tailor.match"
-  | "tailor.gaps";
+  | "tailor.gaps"
+  | "tailor.combined";
 
 export function logPipelineStage(input: {
   tailoringRunId: string;

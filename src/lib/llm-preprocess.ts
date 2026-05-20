@@ -14,6 +14,9 @@ export function preprocessMatchScore(raw: unknown): unknown {
       const n = Number(o[k]);
       if (!Number.isNaN(n)) o[k] = n;
     }
+    if (typeof o[k] === "number" && o[k] > 0 && o[k] <= 1.0) {
+      o[k] = Math.round(o[k] * 100);
+    }
   }
   return o;
 }

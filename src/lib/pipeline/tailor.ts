@@ -12,14 +12,31 @@ import { preprocessMatchScore, preprocessTailoredResume } from "@/lib/llm-prepro
 import { getRun, patchTailoringRun, type RunRecord } from "@/lib/run-store";
 import { assembleResumeForScoring } from "@/lib/resume-assembly";
 import { checkTailoringConsistency } from "@/lib/consistency";
+import { z } from "zod";
 import {
   GapAnalysisSchema,
   MatchScoreSchema,
   TailoredResumeSchema,
 } from "@/schemas";
-import { buildBulletRewriterMessages } from "@/prompts/bullet-rewriter";
-import { buildGapAnalysisMessages } from "@/prompts/gap-analysis";
-import { buildMatchScoringMessages } from "@/prompts/match-scoring";
+import { buildCombinedTailorMessages } from "@/prompts/combined-tailor";
+
+const CombinedTailorSchema = z.object({
+  tailoredResume: TailoredResumeSchema,
+  matchTailored: MatchScoreSchema,
+  gapAnalysis: GapAnalysisSchema,
+});
+
+function preprocessCombinedTailor(raw: unknown): unknown {
+  if (typeof raw !== "object" || raw === null) return raw;
+  const o = raw as Record<string, unknown>;
+  if (o.tailoredResume) {
+    o.tailoredResume = preprocessTailoredResume(o.tailoredResume);
+  }
+  if (o.matchTailored) {
+    o.matchTailored = preprocessMatchScore(o.matchTailored);
+  }
+  return o;
+}
 
 async function timed<T>(
   tailoringRunId: string,
@@ -103,42 +120,16 @@ export async function runTailorPipeline(
   const resumeJson = JSON.stringify(resumeProfile);
   const jdJson = JSON.stringify(jobDescriptionProfile);
 
-  const tailoredResume = await timed(tailoringRunId, "tailor.rewrite", mode, () =>
+  const combined = await timed(tailoringRunId, "tailor.combined", mode, () =>
     completeJson({
-      messages: buildBulletRewriterMessages({ resumeJson, jdJson }),
-      schema: TailoredResumeSchema,
-      schemaHint: "TailoredResume",
-      preprocess: preprocessTailoredResume,
+      messages: buildCombinedTailorMessages({ resumeJson, jdJson }),
+      schema: CombinedTailorSchema,
+      schemaHint: "CombinedTailor",
+      preprocess: preprocessCombinedTailor,
     })
   );
 
-  const assembled = assembleResumeForScoring(resumeProfile, tailoredResume);
-  const assembledJson = JSON.stringify(assembled);
-
-  const [matchTailored, gapAnalysis] = await Promise.all([
-    timed(tailoringRunId, "tailor.match", mode, () =>
-      completeJson({
-        messages: buildMatchScoringMessages({
-          resumeJson: assembledJson,
-          jdJson,
-          label: "tailored resume",
-        }),
-        schema: MatchScoreSchema,
-        schemaHint: "MatchScore",
-        preprocess: preprocessMatchScore,
-      })
-    ),
-    timed(tailoringRunId, "tailor.gaps", mode, () =>
-      completeJson({
-        messages: buildGapAnalysisMessages({
-          resumeJson: assembledJson,
-          jdJson,
-        }),
-        schema: GapAnalysisSchema,
-        schemaHint: "GapAnalysis",
-      })
-    ),
-  ]);
+  const { tailoredResume, matchTailored, gapAnalysis } = combined;
 
   const consistencyReport = checkTailoringConsistency(resumeProfile, tailoredResume);
 
