@@ -180,6 +180,48 @@ npm run test -- --watch=false
 
 ---
 
+## ☁️ Deploying to Vercel
+
+`Resume Shapeshifter` is fully optimized for **Vercel** serverless deployment with zero configuration required.
+
+### 🛠️ Step-by-Step Vercel Deployment
+
+1. **Import the Repository:**
+   * Go to your [Vercel Dashboard](https://vercel.com/) and click **"Add New"** > **"Project"**.
+   * Connect your GitHub account and import your repository: `Suryxbg/Resume_Shapeshifter`.
+
+2. **Configure Build Settings:**
+   * Vercel will automatically detect **Next.js** as the framework.
+   * Leave the **Build Command** (`npm run build`), **Output Directory** (default), and **Install Command** (default) as they are.
+
+3. **Configure Environment Variables:**
+   * Expand the **"Environment Variables"** dropdown and add the following key-value pairs (see details below).
+
+4. **Deploy:**
+   * Click **"Deploy"**. Vercel will build and host your application in under a minute!
+
+---
+
+### ⚙️ Vercel Environment Variables Checklist
+
+Here is the exhaustive checklist of environment variables you can configure in the Vercel console:
+
+| Variable Name | Required? | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| **`GROQ_API_KEY`** | **Yes (for AI)** | *None* | Your live API key from the [Groq Console](https://console.groq.com/). If omitted, the app gracefully falls back to **Mock Demo mode** using safe sample fixtures. |
+| **`GROQ_MODEL`** | No | `llama-3.3-70b-versatile` | The LLM model used for resume analysis and atomic bullet rewriting. We recommend `llama-3.3-70b-versatile` or `llama-3.1-8b-instant`. |
+| **`PDF_FORCE_MOCK`** | No | `false` | Force standard high-fidelity ATS mock PDF buffers (useful for stable, serverless runs). |
+| **`LLM_FORCE_MOCK`** | No | `false` | Forces local mock LLM responses even if `GROQ_API_KEY` is active (useful for demo/debugging). |
+
+---
+
+### 💡 Serverless Deployment Architecture Notes
+
+* **Graceful Headless Browser Fallback:** Since standard serverless platforms like Vercel do not include local Chrome/Edge installations (which Puppeteer requires), the application is designed to **automatically detect** the missing browser path and **gracefully fall back** to generating a lightweight, standard ATS-compliant mock PDF buffer. This keeps the application 100% stable, lightning-fast, and cost-free without needing expensive browserless.io endpoints or heavy browser binaries.
+* **Serverless Rate Limiting:** The built-in rate-limiter utilizes an in-memory sliding window. In Vercel's serverless environment, each container instance scales and tracks rate limits independently, which is ideal for portfolio applications.
+
+---
+
 ## 📜 Architectural Insights
 
 *   For deep technical breakdowns, rate limits, schema details, and fuzzy validation mathematical models, check out [`architecture.md`](architecture.md).
