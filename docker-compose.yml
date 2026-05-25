@@ -1,0 +1,17 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: resume-shapeshifter:latest
+    container_name: resume-shapeshifter-app
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_MODEL=${GROQ_MODEL:-llama-3.3-70b-versatile}
+      - PDF_FORCE_MOCK=${PDF_FORCE_MOCK:-false}
+    env_file:
+      - .env
+    restart: always

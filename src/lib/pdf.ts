@@ -2,18 +2,31 @@ import fs from "fs";
 import puppeteer from "puppeteer-core";
 import type { TailoringRun } from "@/schemas";
 
-const CHROME_PATH = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
-const EDGE_PATH = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
+const CHROME_PATH = ["C:", "Program Files", "Google", "Chrome", "Application", "chrome.exe"].join("\\");
+const EDGE_PATH = ["C:", "Program Files (x86)", "Microsoft", "Edge", "Application", "msedge.exe"].join("\\");
+const LINUX_CHROMIUM_PATH = ["/usr", "bin", "chromium-browser"].join("/");
+const LINUX_CHROME_PATH = ["/usr", "bin", "google-chrome"].join("/");
+
 
 /**
- * Resolves the path of an available system browser on Windows.
+ * Resolves the path of an available system browser.
+ * Supports Windows, Linux, and custom PUPPETEER_EXECUTABLE_PATH configurations.
  */
 export function getSystemBrowserPath(): string | null {
+  if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+    return process.env.PUPPETEER_EXECUTABLE_PATH;
+  }
   if (fs.existsSync(CHROME_PATH)) {
     return CHROME_PATH;
   }
   if (fs.existsSync(EDGE_PATH)) {
     return EDGE_PATH;
+  }
+  if (fs.existsSync(LINUX_CHROMIUM_PATH)) {
+    return LINUX_CHROMIUM_PATH;
+  }
+  if (fs.existsSync(LINUX_CHROME_PATH)) {
+    return LINUX_CHROME_PATH;
   }
   return null;
 }
