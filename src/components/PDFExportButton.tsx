@@ -8,6 +8,8 @@ type PDFExportButtonProps = {
   tailoringRunId: string | null;
   kind: "tailored" | "comparison";
   disabled?: boolean;
+  /** Fallback run data for serverless environments where server-side memory is cleared between calls. */
+  runFallback?: Record<string, unknown>;
 };
 
 export function PDFExportButton({
@@ -16,6 +18,7 @@ export function PDFExportButton({
   tailoringRunId,
   kind,
   disabled = false,
+  runFallback,
 }: PDFExportButtonProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +41,7 @@ export function PDFExportButton({
         body: JSON.stringify({
           tailoringRunId,
           kind,
+          runFallback,
         }),
       });
 

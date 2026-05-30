@@ -12,7 +12,7 @@ const g = globalThis as unknown as {
   __tailoringRunStore?: Map<string, RunRecord>;
 };
 
-function getMap(): Map<string, RunRecord> {
+export function getMap(): Map<string, RunRecord> {
   if (!g.__tailoringRunStore) {
     g.__tailoringRunStore = new Map();
   }

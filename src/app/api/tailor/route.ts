@@ -46,7 +46,10 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await runTailorPipeline(parsed.data.tailoringRunId);
+    const result = await runTailorPipeline(
+      parsed.data.tailoringRunId,
+      parsed.data.fallback
+    );
     const { inferenceMode, inferenceNotice, ...payload } = result;
 
     const out = TailorResponseSchema.safeParse(payload);

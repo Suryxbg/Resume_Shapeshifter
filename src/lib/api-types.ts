@@ -29,6 +29,17 @@ export type AnalyzeResponse = z.infer<typeof AnalyzeResponseSchema>;
 
 export const TailorRequestSchema = z.object({
   tailoringRunId: z.string().uuid(),
+  /** Fallback payload for serverless environments where in-memory run store is empty. */
+  fallback: z
+    .object({
+      resumeText: z.string().min(1),
+      jdText: z.string().min(1),
+      resumeProfile: ResumeProfileSchema,
+      jobDescriptionProfile: JobDescriptionProfileSchema,
+      matchOriginal: MatchScoreSchema,
+      gapAnalysis: GapAnalysisSchema,
+    })
+    .optional(),
 });
 
 export const TailorResponseSchema = z.object({

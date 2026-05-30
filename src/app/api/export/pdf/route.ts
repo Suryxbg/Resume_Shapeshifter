@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRun } from "@/lib/run-store";
+import { createRun, getMap, getRun, patchTailoringRun } from "@/lib/run-store";
 import {
   generatePdf,
   buildTailoredResumeHtml,
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { tailoringRunId, kind } = body;
+    const { tailoringRunId, kind, runFallback } = body;
 
     if (!tailoringRunId || typeof tailoringRunId !== "string") {
       return NextResponse.json(
@@ -58,7 +58,32 @@ export async function POST(request: Request) {
     }
 
     // Fetch run from store
-    const runRecord = getRun(tailoringRunId);
+    let runRecord = getRun(tailoringRunId);
+
+    // Serverless fallback: reconstruct the run from client-supplied data
+    if (!runRecord && runFallback) {
+      console.log(
+        `[pdf.api] Run ${tailoringRunId} not in memory — reconstructing from client fallback (serverless mode).`
+      );
+      const created = createRun({
+        resumeText: runFallback.resumeText || "",
+        jdText: runFallback.jdText || "",
+      });
+      created.tailoringRun.id = tailoringRunId;
+      getMap().set(tailoringRunId, created);
+
+      patchTailoringRun(tailoringRunId, {
+        resumeProfile: runFallback.resumeProfile,
+        jobDescriptionProfile: runFallback.jobDescriptionProfile,
+        matchOriginal: runFallback.matchOriginal,
+        matchTailored: runFallback.matchTailored,
+        tailoredResume: runFallback.tailoredResume,
+        gapAnalysis: runFallback.gapAnalysis,
+        status: "ready_for_export",
+      });
+      runRecord = getRun(tailoringRunId);
+    }
+
     if (!runRecord) {
       return NextResponse.json(
         {

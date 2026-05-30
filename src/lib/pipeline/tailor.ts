@@ -12,7 +12,13 @@ import {
   preprocessMatchScore,
   preprocessTailoredResume,
 } from "@/lib/llm-preprocess";
-import { getRun, patchTailoringRun, type RunRecord } from "@/lib/run-store";
+import {
+  createRun,
+  getMap,
+  getRun,
+  patchTailoringRun,
+  type RunRecord,
+} from "@/lib/run-store";
 import { assembleResumeForScoring } from "@/lib/resume-assembly";
 import { checkTailoringConsistency } from "@/lib/consistency";
 import { z } from "zod";
@@ -85,10 +91,45 @@ function requireAnalyzedRun(rec: RunRecord) {
   return { resumeProfile, jobDescriptionProfile, matchOriginal };
 }
 
+export type TailorFallback = {
+  resumeText: string;
+  jdText: string;
+  resumeProfile: z.infer<typeof import("@/schemas").ResumeProfileSchema>;
+  jobDescriptionProfile: z.infer<
+    typeof import("@/schemas").JobDescriptionProfileSchema
+  >;
+  matchOriginal: z.infer<typeof import("@/schemas").MatchScoreSchema>;
+  gapAnalysis: z.infer<typeof import("@/schemas").GapAnalysisSchema>;
+};
+
 export async function runTailorPipeline(
-  tailoringRunId: string
+  tailoringRunId: string,
+  fallback?: TailorFallback
 ): Promise<TailorPipelineResult> {
-  const rec = getRun(tailoringRunId);
+  let rec = getRun(tailoringRunId);
+
+  // Serverless fallback: reconstruct the run from client-supplied analyze data
+  if (!rec && fallback) {
+    console.log(
+      `[tailor] Run ${tailoringRunId} not in memory — reconstructing from client fallback (serverless mode).`
+    );
+    const created = createRun({
+      resumeText: fallback.resumeText,
+      jdText: fallback.jdText,
+    });
+    // Override the auto-generated ID with the original one so downstream stays consistent
+    created.tailoringRun.id = tailoringRunId;
+    getMap().set(tailoringRunId, created);
+
+    patchTailoringRun(tailoringRunId, {
+      resumeProfile: fallback.resumeProfile,
+      jobDescriptionProfile: fallback.jobDescriptionProfile,
+      matchOriginal: fallback.matchOriginal,
+      gapAnalysis: fallback.gapAnalysis,
+    });
+    rec = getRun(tailoringRunId);
+  }
+
   if (!rec) throw new Error("NOT_FOUND");
 
   const mode = resolveInferenceMode();

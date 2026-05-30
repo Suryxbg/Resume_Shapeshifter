@@ -91,13 +91,27 @@ export function ToolFlow() {
       setError("Missing tailoring run. Analyze first.");
       return;
     }
+    if (!analyze) {
+      setError("Missing analysis data. Please analyze first.");
+      return;
+    }
     setError(null);
     setLoading(true);
     try {
       const res = await fetch("/api/tailor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tailoringRunId }),
+        body: JSON.stringify({
+          tailoringRunId,
+          fallback: {
+            resumeText,
+            jdText,
+            resumeProfile: analyze.resumeProfile,
+            jobDescriptionProfile: analyze.jobDescriptionProfile,
+            matchOriginal: analyze.matchOriginal,
+            gapAnalysis: analyze.gapAnalysis,
+          },
+        }),
       });
       if (!res.ok) {
         setError(await readApiError(res));
@@ -112,7 +126,7 @@ export function ToolFlow() {
     } finally {
       setLoading(false);
     }
-  }, [tailoringRunId]);
+  }, [tailoringRunId, analyze, resumeText, jdText]);
 
   const goExport = useCallback(() => {
     setStep("export");
@@ -502,6 +516,16 @@ export function ToolFlow() {
               tailoringRunId={tailoringRunId}
               kind="tailored"
               disabled={!reviewedAndVerified}
+              runFallback={{
+                resumeText,
+                jdText,
+                resumeProfile: analyze?.resumeProfile,
+                jobDescriptionProfile: analyze?.jobDescriptionProfile,
+                matchOriginal: analyze?.matchOriginal,
+                matchTailored: tailor?.matchTailored,
+                tailoredResume: tailor?.tailoredResume,
+                gapAnalysis: tailor?.gapAnalysis ?? analyze?.gapAnalysis,
+              }}
             />
             <PDFExportButton
               label="Side-by-Side Comparison PDF"
@@ -509,6 +533,16 @@ export function ToolFlow() {
               tailoringRunId={tailoringRunId}
               kind="comparison"
               disabled={!reviewedAndVerified}
+              runFallback={{
+                resumeText,
+                jdText,
+                resumeProfile: analyze?.resumeProfile,
+                jobDescriptionProfile: analyze?.jobDescriptionProfile,
+                matchOriginal: analyze?.matchOriginal,
+                matchTailored: tailor?.matchTailored,
+                tailoredResume: tailor?.tailoredResume,
+                gapAnalysis: tailor?.gapAnalysis ?? analyze?.gapAnalysis,
+              }}
             />
           </div>
 
