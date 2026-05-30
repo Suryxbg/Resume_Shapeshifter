@@ -2,11 +2,24 @@ import fs from "fs";
 import puppeteer from "puppeteer-core";
 import type { TailoringRun } from "@/schemas";
 
-const CHROME_PATH = ["C:", "Program Files", "Google", "Chrome", "Application", "chrome.exe"].join("\\");
-const EDGE_PATH = ["C:", "Program Files (x86)", "Microsoft", "Edge", "Application", "msedge.exe"].join("\\");
+const CHROME_PATH = [
+  "C:",
+  "Program Files",
+  "Google",
+  "Chrome",
+  "Application",
+  "chrome.exe",
+].join("\\");
+const EDGE_PATH = [
+  "C:",
+  "Program Files (x86)",
+  "Microsoft",
+  "Edge",
+  "Application",
+  "msedge.exe",
+].join("\\");
 const LINUX_CHROMIUM_PATH = ["/usr", "bin", "chromium-browser"].join("/");
 const LINUX_CHROME_PATH = ["/usr", "bin", "google-chrome"].join("/");
-
 
 /**
  * Resolves the path of an available system browser.
@@ -32,16 +45,244 @@ export function getSystemBrowserPath(): string | null {
 }
 
 /**
+ * Generates a valid PDF structure programmatically as a fallback.
+ * Uses standard PDF 1.4 elements and handles precise byte calculations.
+ */
+export function generateValidMockPdf(title: string, lines: string[]): Buffer {
+  const sanitize = (str: string) => {
+    return str
+      .replace(/[\u2018\u2019]/g, "'") // Smart single quotes
+      .replace(/[\u201C\u201D]/g, '"') // Smart double quotes
+      .replace(/[\u2013\u2014]/g, "-") // En/em dashes
+      .replace(/[\\()]/g, "\\$&"); // Escape PDF special chars
+  };
+
+  const header = "%PDF-1.4\n";
+
+  // Object 1: Catalog
+  const obj1 = "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n";
+
+  // Object 2: Pages
+  const obj2 = "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n";
+
+  // Object 5: Font definition
+  const obj5 =
+    "5 0 obj\n<< /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >>\nendobj\n";
+
+  // Let's build the content stream (Object 4)
+  let streamContent = "BT\n/F1 10 Tf\n14 TL\n50 780 Td\n";
+
+  // Add title
+  streamContent += `/F1 14 Tf\n(${sanitize(title)}) Tj T*\n14 TL\n/F1 10 Tf\n\n`;
+  streamContent += `(Mock PDF Generated Successfully - Serverless Fallback Mode) Tj T*\n`;
+  streamContent += `(Note: High-fidelity formatting was converted to standard clean text.) Tj T*\nT*\n`;
+
+  for (const line of lines) {
+    if (line.trim() === "") {
+      streamContent += "T*\n";
+    } else {
+      // Simple text wrapping (limit to approx 80 chars per line)
+      const words = line.split(" ");
+      let currentLine = "";
+      for (const word of words) {
+        if ((currentLine + " " + word).length > 80) {
+          streamContent += `(${sanitize(currentLine.trim())}) Tj T*\n`;
+          currentLine = word;
+        } else {
+          currentLine += (currentLine ? " " : "") + word;
+        }
+      }
+      if (currentLine) {
+        streamContent += `(${sanitize(currentLine.trim())}) Tj T*\n`;
+      }
+    }
+  }
+  streamContent += "ET\n";
+
+  const streamLen = Buffer.from(streamContent, "utf-8").length;
+  const obj4 = `4 0 obj\n<< /Length ${streamLen} >>\nstream\n${streamContent}endstream\nendobj\n`;
+
+  // Object 3: Page (references Pages, Contents, Font)
+  const obj3 =
+    "3 0 obj\n<< /Type /Page /Parent 2 0 R /Resources 5 0 R /MediaBox [0 0 595.275 841.889] /Contents 4 0 R >>\nendobj\n";
+
+  // Calculate precise offsets for xref (precise byte offsets in UTF-8)
+  const offset1 = Buffer.from(header, "utf-8").length;
+  const offset2 = offset1 + Buffer.from(obj1, "utf-8").length;
+  const offset3 = offset2 + Buffer.from(obj2, "utf-8").length;
+  const offset4 = offset3 + Buffer.from(obj3, "utf-8").length;
+  const offset5 = offset4 + Buffer.from(obj4, "utf-8").length;
+  const startXref = offset5 + Buffer.from(obj5, "utf-8").length;
+
+  const pad10 = (num: number) => {
+    return num.toString().padStart(10, "0");
+  };
+
+  const xref =
+    "xref\n" +
+    "0 6\n" +
+    "0000000000 65535 f \n" +
+    `${pad10(offset1)} 00000 n \n` +
+    `${pad10(offset2)} 00000 n \n` +
+    `${pad10(offset3)} 00000 n \n` +
+    `${pad10(offset4)} 00000 n \n` +
+    `${pad10(offset5)} 00000 n \n`;
+
+  const trailer =
+    `trailer\n<< /Size 6 /Root 1 0 R >>\n` +
+    `startxref\n${startXref}\n` +
+    `%%EOF\n`;
+
+  const pdfContent = header + obj1 + obj2 + obj3 + obj4 + obj5 + xref + trailer;
+  return Buffer.from(pdfContent, "utf-8");
+}
+
+/**
+ * Builds structured plain text representation of the tailored resume for fallback.
+ */
+export function buildTailoredResumeFallbackLines(run: TailoringRun): string[] {
+  const resume = run.resumeProfile;
+  const tailor = run.tailoredResume;
+  if (!resume || !tailor) return [];
+
+  const lines: string[] = [];
+
+  // Header contact
+  const contactKeys = Object.keys(resume.contact || {});
+  const contactLine = contactKeys
+    .map((key) => `${key}: ${resume.contact[key]}`)
+    .join("  |  ");
+
+  lines.push(contactLine);
+  lines.push("");
+
+  // Summary
+  lines.push("SUMMARY");
+  lines.push(
+    "--------------------------------------------------------------------------------"
+  );
+  lines.push(tailor.tailoredSummary);
+  lines.push("");
+
+  // Skills
+  lines.push("CORE COMPETENCIES");
+  lines.push(
+    "--------------------------------------------------------------------------------"
+  );
+  lines.push(tailor.tailoredSkills.join("  •  "));
+  lines.push("");
+
+  // Experience
+  lines.push("PROFESSIONAL EXPERIENCE");
+  lines.push(
+    "--------------------------------------------------------------------------------"
+  );
+  for (const job of tailor.tailoredExperience) {
+    lines.push(`${job.title} - ${job.company}`);
+    for (const b of job.bullets) {
+      lines.push(`  • ${b.tailored}`);
+    }
+    lines.push("");
+  }
+
+  return lines;
+}
+
+/**
+ * Builds structured plain text representation of the comparison report for fallback.
+ */
+export function buildComparisonFallbackLines(run: TailoringRun): string[] {
+  const resume = run.resumeProfile;
+  const jd = run.jobDescriptionProfile;
+  const origMatch = run.matchOriginal;
+  const tailMatch = run.matchTailored;
+  const tailor = run.tailoredResume;
+  const gaps = run.gapAnalysis;
+
+  if (!resume || !jd || !origMatch || !tailor) return [];
+
+  const lines: string[] = [];
+
+  lines.push(
+    `Target Job: ${jd.jobTitle} ${jd.company ? `at ${jd.company}` : ""}`
+  );
+  lines.push("");
+  lines.push(`Original Match Score: ${origMatch.overallScore}%`);
+  lines.push(`Original Match Explanation: ${origMatch.explanation}`);
+  lines.push("");
+  lines.push(`Tailored Match Score: ${tailMatch?.overallScore ?? "N/A"}%`);
+  lines.push(`Tailored Match Explanation: ${tailMatch?.explanation ?? ""}`);
+  lines.push("");
+
+  lines.push("BULLET IMPROVEMENTS (ORIGINAL -> TAILORED)");
+  lines.push(
+    "--------------------------------------------------------------------------------"
+  );
+  for (const job of tailor.tailoredExperience) {
+    lines.push(`[${job.company}] ${job.title}`);
+    for (const b of job.bullets) {
+      lines.push(`  - Original: ${b.original}`);
+      lines.push(`  + Tailored: ${b.tailored}`);
+      lines.push(`    Reason: ${b.changeReason}`);
+      lines.push("");
+    }
+  }
+
+  if (gaps?.gaps && gaps.gaps.length > 0) {
+    lines.push("GAPS & RISK AUDIT");
+    lines.push(
+      "--------------------------------------------------------------------------------"
+    );
+    for (const g of gaps.gaps) {
+      lines.push(`  • ${g.name} (${g.importance.toUpperCase()} Importance)`);
+      lines.push(`    Evidence: ${g.jdEvidence}`);
+      lines.push(`    Action: ${g.suggestedAction}`);
+      lines.push("");
+    }
+  }
+
+  return lines;
+}
+
+/**
  * Generates a PDF buffer from an HTML template string using local puppeteer-core.
  * In environments where no local browser is found (e.g., CI/CD), falls back
  * gracefully to returning a mock PDF buffer to ensure stability.
  */
-export async function generatePdf(htmlContent: string): Promise<Buffer> {
+export async function generatePdf(
+  htmlContent: string,
+  kind?: "tailored" | "comparison",
+  run?: TailoringRun
+): Promise<Buffer> {
   const browserPath = getSystemBrowserPath();
 
-  if (!browserPath || process.env.NODE_ENV === "test" || process.env.PDF_FORCE_MOCK === "true") {
-    console.warn("[pdf-generator] No local system browser found or in test mode. Returning mock PDF buffer.");
-    return Buffer.from("%PDF-1.4 Mock PDF Generated Successfully");
+  if (
+    !browserPath ||
+    process.env.NODE_ENV === "test" ||
+    process.env.PDF_FORCE_MOCK === "true"
+  ) {
+    console.warn(
+      "[pdf-generator] No local system browser found or in test mode. Returning dynamic valid PDF buffer."
+    );
+
+    if (run && kind === "tailored") {
+      const title = `${run.resumeProfile?.contact?.Name || run.resumeProfile?.contact?.name || "Candidate"} - Tailored Resume`;
+      const lines = buildTailoredResumeFallbackLines(run);
+      return generateValidMockPdf(title, lines);
+    } else if (run && kind === "comparison") {
+      const title = `Tailoring Comparison Report - ${run.jobDescriptionProfile?.jobTitle || ""}`;
+      const lines = buildComparisonFallbackLines(run);
+      return generateValidMockPdf(title, lines);
+    }
+
+    // Default generic valid mock PDF for tests or missing run parameter
+    return generateValidMockPdf("Mock PDF Generated Successfully", [
+      "This is a fallback PDF file generated because a headless browser",
+      "was not detected in this environment (e.g. serverless functions).",
+      "To enable high-fidelity PDF rendering, please run this application",
+      "in an environment that supports Chrome/Edge, or configure your Docker",
+      "container to run standard Chromium.",
+    ]);
   }
 
   const browser = await puppeteer.launch({
@@ -65,7 +306,8 @@ export async function generatePdf(htmlContent: string): Promise<Buffer> {
     });
     return Buffer.from(pdfArray);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown PDF engine failure";
+    const message =
+      error instanceof Error ? error.message : "Unknown PDF engine failure";
     throw new Error(`PDF generation engine failed: ${message}`);
   } finally {
     await browser.close();
@@ -80,7 +322,9 @@ export function buildTailoredResumeHtml(run: TailoringRun): string {
   const tailor = run.tailoredResume;
 
   if (!resume || !tailor) {
-    throw new Error("Missing required resume or tailoring profiles to render PDF.");
+    throw new Error(
+      "Missing required resume or tailoring profiles to render PDF."
+    );
   }
 
   // Header contact fields
@@ -91,18 +335,22 @@ export function buildTailoredResumeHtml(run: TailoringRun): string {
 
   // Experience entry date lookup helper
   const findOriginalDates = (company: string, title: string) => {
-    const matched = resume.experience?.find(
-      (exp) =>
-        (exp.company.toLowerCase().includes(company.toLowerCase()) ||
-          company.toLowerCase().includes(exp.company.toLowerCase())) &&
-        (exp.title.toLowerCase().includes(title.toLowerCase()) ||
-          title.toLowerCase().includes(exp.title.toLowerCase()))
-    ) || resume.experience?.find(
-      (exp) =>
-        exp.company.toLowerCase().includes(company.toLowerCase()) ||
-        company.toLowerCase().includes(exp.company.toLowerCase())
-    );
-    return matched ? { start: matched.startDate, end: matched.endDate } : { start: "", end: "" };
+    const matched =
+      resume.experience?.find(
+        (exp) =>
+          (exp.company.toLowerCase().includes(company.toLowerCase()) ||
+            company.toLowerCase().includes(exp.company.toLowerCase())) &&
+          (exp.title.toLowerCase().includes(title.toLowerCase()) ||
+            title.toLowerCase().includes(exp.title.toLowerCase()))
+      ) ||
+      resume.experience?.find(
+        (exp) =>
+          exp.company.toLowerCase().includes(company.toLowerCase()) ||
+          company.toLowerCase().includes(exp.company.toLowerCase())
+      );
+    return matched
+      ? { start: matched.startDate, end: matched.endDate }
+      : { start: "", end: "" };
   };
 
   // Build Experience list HTML
@@ -112,7 +360,10 @@ export function buildTailoredResumeHtml(run: TailoringRun): string {
       const datesString = dates.start ? `${dates.start} - ${dates.end}` : "";
 
       const bulletsHtml = job.bullets
-        .map((b) => `<li style="margin-bottom: 6px; line-height: 1.4;">${b.tailored}</li>`)
+        .map(
+          (b) =>
+            `<li style="margin-bottom: 6px; line-height: 1.4;">${b.tailored}</li>`
+        )
         .join("");
 
       return `
@@ -136,14 +387,20 @@ export function buildTailoredResumeHtml(run: TailoringRun): string {
     .join("");
 
   // Section helper for simple lists
-  const renderSimpleSection = (title: string, items: Record<string, unknown>[]) => {
+  const renderSimpleSection = (
+    title: string,
+    items: Record<string, unknown>[]
+  ) => {
     if (!items || items.length === 0) return "";
 
     const itemsHtml = items
       .map((item) => {
         const keys = Object.keys(item);
         const name = keys[0] ? String(item[keys[0]] || "") : "";
-        const details = keys.slice(1).map((k) => `${k}: ${String(item[k] || "")}`).join(", ");
+        const details = keys
+          .slice(1)
+          .map((k) => `${k}: ${String(item[k] || "")}`)
+          .join(", ");
         return `<li style="margin-bottom: 4px; line-height: 1.4;"><strong>${name}</strong>${details ? ` - ${details}` : ""}</li>`;
       })
       .join("");
@@ -232,21 +489,26 @@ export function buildComparisonHtml(run: TailoringRun): string {
   const gaps = run.gapAnalysis;
 
   if (!resume || !jd || !origMatch || !tailor) {
-    throw new Error("Missing required tailoring profiles to build comparison PDF.");
+    throw new Error(
+      "Missing required tailoring profiles to build comparison PDF."
+    );
   }
 
   // Render original vs tailored score card HTML
   const tailScore = tailMatch?.overallScore ?? "N/A";
-  const tailScoreExplanation = tailMatch?.explanation ?? "Tailored score metrics generated asynchronously.";
+  const tailScoreExplanation =
+    tailMatch?.explanation ??
+    "Tailored score metrics generated asynchronously.";
 
   // Build Gap Analysis rows
   const gapsHtml = (gaps?.gaps || [])
     .map((g) => {
-      const importanceBadge = g.importance === "high"
-        ? `<span style="background-color: #fee2e2; color: #991b1b; padding: 2px 6px; font-size: 9px; border-radius: 4px; font-weight: bold; font-family: sans-serif;">High Priority</span>`
-        : g.importance === "medium"
-          ? `<span style="background-color: #fef3c7; color: #92400e; padding: 2px 6px; font-size: 9px; border-radius: 4px; font-weight: bold; font-family: sans-serif;">Medium</span>`
-          : `<span style="background-color: #f0fdf4; color: #166534; padding: 2px 6px; font-size: 9px; border-radius: 4px; font-weight: bold; font-family: sans-serif;">Low</span>`;
+      const importanceBadge =
+        g.importance === "high"
+          ? `<span style="background-color: #fee2e2; color: #991b1b; padding: 2px 6px; font-size: 9px; border-radius: 4px; font-weight: bold; font-family: sans-serif;">High Priority</span>`
+          : g.importance === "medium"
+            ? `<span style="background-color: #fef3c7; color: #92400e; padding: 2px 6px; font-size: 9px; border-radius: 4px; font-weight: bold; font-family: sans-serif;">Medium</span>`
+            : `<span style="background-color: #f0fdf4; color: #166534; padding: 2px 6px; font-size: 9px; border-radius: 4px; font-weight: bold; font-family: sans-serif;">Low</span>`;
 
       const safeBadge = g.canSafelyAdd
         ? `<span style="background-color: #ecfdf5; color: #065f46; padding: 2px 6px; font-size: 9px; border-radius: 4px; font-weight: bold; font-family: sans-serif; margin-left: 4px;">Safely Addable</span>`
@@ -307,7 +569,7 @@ export function buildComparisonHtml(run: TailoringRun): string {
                 <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 10px; color: #4b5563; margin-bottom: 6px;">
                   <span><strong>Reason:</strong> ${bullet.changeReason}</span>
                   <span>|</span>
-                  <span><strong>Keywords Addressed:</strong> ${bullet.keywordsAddressed.length > 0 ? bullet.keywordsAddressed.map(k => `<code>${k}</code>`).join(", ") : "None"}</span>
+                  <span><strong>Keywords Addressed:</strong> ${bullet.keywordsAddressed.length > 0 ? bullet.keywordsAddressed.map((k) => `<code>${k}</code>`).join(", ") : "None"}</span>
                   <span>|</span>
                   <span><strong>Confidence:</strong> <span style="color: ${confidenceColor}; font-weight: bold;">${bullet.confidence.toUpperCase()}</span></span>
                 </div>

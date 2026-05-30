@@ -124,11 +124,16 @@ export function ToolFlow() {
     <div className="mx-auto max-w-4xl px-6 py-10">
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Tailoring workflow</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Tailoring workflow
+          </h1>
           <p className="mt-1 text-sm text-zinc-600">
             Paste resume + JD → analyze → tailor → review. Uses Groq when{" "}
-            <code className="rounded bg-zinc-200 px-1 text-xs">GROQ_API_KEY</code> is
-            set in <code className="rounded bg-zinc-200 px-1 text-xs">.env</code>.
+            <code className="rounded bg-zinc-200 px-1 text-xs">
+              GROQ_API_KEY
+            </code>{" "}
+            is set in{" "}
+            <code className="rounded bg-zinc-200 px-1 text-xs">.env</code>.
           </p>
         </div>
         <div className="flex gap-2">
@@ -160,15 +165,38 @@ export function ToolFlow() {
             ["tailor", "3. Tailor"],
             ["export", "4. Export"],
           ] as const
-        ).map(([id, label]) => (
-          <li
-            key={id}
-            className={`rounded-full px-3 py-1 ${step === id ? "bg-zinc-900 text-white" : "bg-zinc-200 text-zinc-700"
-              }`}
-          >
-            {label}
-          </li>
-        ))}
+        ).map(([id, label]) => {
+          const isUnlocked =
+            id === "input" ||
+            (id === "analysis" && analyze !== null) ||
+            (id === "tailor" && tailor !== null) ||
+            (id === "export" && tailor !== null);
+
+          return (
+            <li key={id} className="flex">
+              {isUnlocked ? (
+                <button
+                  type="button"
+                  onClick={() => setStep(id)}
+                  className={`rounded-full px-3 py-1 transition-all ${
+                    step === id
+                      ? "bg-zinc-900 font-semibold text-white shadow-sm"
+                      : "bg-zinc-200 text-zinc-700 hover:bg-zinc-300 active:scale-[0.98]"
+                  }`}
+                >
+                  {label}
+                </button>
+              ) : (
+                <span
+                  className="cursor-not-allowed select-none rounded-full bg-zinc-100 px-3 py-1 text-zinc-400"
+                  title="Complete the previous steps to unlock this phase"
+                >
+                  {label}
+                </span>
+              )}
+            </li>
+          );
+        })}
       </ol>
 
       {inferenceNotice ? (
@@ -212,14 +240,14 @@ export function ToolFlow() {
 
           {uploadNotice && (
             <div
-              className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-950 flex items-center gap-2"
+              className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-950"
               role="status"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
                 fill="currentColor"
-                className="h-5 w-5 text-green-600 flex-shrink-0"
+                className="h-5 w-5 flex-shrink-0 text-green-600"
               >
                 <path
                   fillRule="evenodd"
@@ -239,12 +267,16 @@ export function ToolFlow() {
             }}
             disabled={inputDisabled}
           />
-          <JDInput value={jdText} onChange={setJdText} disabled={inputDisabled} />
+          <JDInput
+            value={jdText}
+            onChange={setJdText}
+            disabled={inputDisabled}
+          />
           <button
             type="button"
             onClick={runAnalyze}
             disabled={loading || !resumeText.trim() || !jdText.trim()}
-            className="flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400 transition-colors"
+            className="flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white shadow transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
           >
             {loading ? (
               <>
@@ -295,7 +327,9 @@ export function ToolFlow() {
           <ScoreCard title="Original match" score={analyze.matchOriginal} />
 
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900">Gap analysis</h2>
+            <h2 className="text-lg font-semibold text-zinc-900">
+              Gap analysis
+            </h2>
             <div className="mt-3">
               <GapAnalysis analysis={analyze.gapAnalysis} />
             </div>
@@ -305,7 +339,7 @@ export function ToolFlow() {
             type="button"
             onClick={runTailor}
             disabled={loading}
-            className="flex self-start items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400 transition-colors"
+            className="flex items-center justify-center gap-2 self-start rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white shadow transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
           >
             {loading ? (
               <>
@@ -327,11 +361,15 @@ export function ToolFlow() {
           </div>
 
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900">Tailored summary</h2>
+            <h2 className="text-lg font-semibold text-zinc-900">
+              Tailored summary
+            </h2>
             <p className="mt-2 text-sm leading-relaxed text-zinc-800">
               {tailor.tailoredResume.tailoredSummary}
             </p>
-            <p className="mt-2 text-xs font-medium uppercase text-zinc-500">Skills order</p>
+            <p className="mt-2 text-xs font-medium uppercase text-zinc-500">
+              Skills order
+            </p>
             <p className="text-sm text-zinc-700">
               {tailor.tailoredResume.tailoredSkills.join(" · ")}
             </p>
@@ -350,7 +388,9 @@ export function ToolFlow() {
           </div>
 
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900">Gaps (after tailoring)</h2>
+            <h2 className="text-lg font-semibold text-zinc-900">
+              Gaps (after tailoring)
+            </h2>
             <div className="mt-3">
               <GapAnalysis analysis={tailor.gapAnalysis} />
             </div>
@@ -369,42 +409,61 @@ export function ToolFlow() {
       {step === "export" && (
         <section className="flex flex-col gap-6">
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900">Download Resumes & Reports</h2>
+            <h2 className="text-lg font-semibold text-zinc-900">
+              Download Resumes & Reports
+            </h2>
             <p className="mt-1 text-sm text-zinc-600">
-              Your tailored documents have been generated on the server using high-fidelity rendering engines. Download them below.
+              Your tailored documents have been generated on the server using
+              high-fidelity rendering engines. Download them below.
             </p>
           </div>
 
           {/* AI Accuracy Auditing & Disclaimers */}
           {(() => {
-            const lowConfidenceCount = tailor?.tailoredResume?.tailoredExperience?.reduce(
-              (count, exp) => count + (exp.bullets?.filter((b) => b.confidence === "low").length || 0),
-              0
-            ) || 0;
+            const lowConfidenceCount =
+              tailor?.tailoredResume?.tailoredExperience?.reduce(
+                (count, exp) =>
+                  count +
+                  (exp.bullets?.filter((b) => b.confidence === "low").length ||
+                    0),
+                0
+              ) || 0;
             const consistencyReport = tailor?.consistencyReport;
-            const hasConsistencyWarnings = consistencyReport && (consistencyReport.warnings.length > 0 || consistencyReport.errors.length > 0);
+            const hasConsistencyWarnings =
+              consistencyReport &&
+              (consistencyReport.warnings.length > 0 ||
+                consistencyReport.errors.length > 0);
 
-            if (lowConfidenceCount === 0 && !hasConsistencyWarnings) return null;
+            if (lowConfidenceCount === 0 && !hasConsistencyWarnings)
+              return null;
 
             return (
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
-                <h3 className="text-sm font-semibold text-amber-900 flex items-center gap-2">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-amber-900">
                   ⚠️ AI Accuracy & Consistency Audit Note
                 </h3>
-                <p className="mt-1 text-xs text-amber-800 leading-relaxed">
-                  Our consistency validation engine completed an audit on the generated updates:
+                <p className="mt-1 text-xs leading-relaxed text-amber-800">
+                  Our consistency validation engine completed an audit on the
+                  generated updates:
                 </p>
-                <ul className="mt-1.5 list-inside list-disc text-[11px] text-amber-700 leading-normal gap-1 flex flex-col">
+                <ul className="mt-1.5 flex list-inside list-disc flex-col gap-1 text-[11px] leading-normal text-amber-700">
                   {lowConfidenceCount > 0 && (
                     <li>
-                      <strong>{lowConfidenceCount}</strong> tailored update{lowConfidenceCount > 1 ? "s were" : " was"} marked with <strong>low confidence</strong> by the LLM bullet-rewriting pipeline.
+                      <strong>{lowConfidenceCount}</strong> tailored update
+                      {lowConfidenceCount > 1 ? "s were" : " was"} marked with{" "}
+                      <strong>low confidence</strong> by the LLM
+                      bullet-rewriting pipeline.
                     </li>
                   )}
                   {consistencyReport?.errors.map((err, idx) => (
-                    <li key={`err-${idx}`}><strong>Consistency Error:</strong> {err}</li>
+                    <li key={`err-${idx}`}>
+                      <strong>Consistency Error:</strong> {err}
+                    </li>
                   ))}
                   {consistencyReport?.warnings.map((warn, idx) => (
-                    <li key={`warn-${idx}`}><strong>Audit Warning:</strong> {warn}</li>
+                    <li key={`warn-${idx}`}>
+                      <strong>Audit Warning:</strong> {warn}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -413,18 +472,24 @@ export function ToolFlow() {
 
           {/* Verification gate */}
           <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm">
-            <label className="flex items-start gap-4 cursor-pointer select-none">
+            <label className="flex cursor-pointer select-none items-start gap-4">
               <input
                 type="checkbox"
                 id="verification-gate-checkbox"
                 checked={reviewedAndVerified}
                 onChange={(e) => setReviewedAndVerified(e.target.checked)}
-                className="h-5 w-5 mt-0.5 rounded border-zinc-300 text-zinc-950 focus:ring-zinc-900 cursor-pointer"
+                className="mt-0.5 h-5 w-5 cursor-pointer rounded border-zinc-300 text-zinc-950 focus:ring-zinc-900"
               />
               <div className="flex-1">
-                <span className="text-sm font-semibold text-zinc-900">Mandatory Accuracy Verification Gate</span>
-                <p className="mt-1 text-xs text-zinc-500 leading-relaxed">
-                  I acknowledge that I have personally reviewed all AI-suggested rephrasings, bullet adjustments, and matching audits. I confirm that all details and descriptions contained within the generated documents are fully accurate, represent my genuine professional work experience, and are free of fabrications.
+                <span className="text-sm font-semibold text-zinc-900">
+                  Mandatory Accuracy Verification Gate
+                </span>
+                <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+                  I acknowledge that I have personally reviewed all AI-suggested
+                  rephrasings, bullet adjustments, and matching audits. I
+                  confirm that all details and descriptions contained within the
+                  generated documents are fully accurate, represent my genuine
+                  professional work experience, and are free of fabrications.
                 </p>
               </div>
             </label>
@@ -450,7 +515,7 @@ export function ToolFlow() {
           <button
             type="button"
             onClick={reset}
-            className="self-start mt-4 rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-750 shadow-sm hover:bg-zinc-50"
+            className="text-zinc-750 mt-4 self-start rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm font-semibold shadow-sm hover:bg-zinc-50"
           >
             Start New Tailoring Session
           </button>

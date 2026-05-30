@@ -9,7 +9,10 @@ import {
 import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
 
 // In-memory idempotency cache for the MVP
-const idempotencyCache = new Map<string, { buffer: Buffer; filename: string }>();
+const idempotencyCache = new Map<
+  string,
+  { buffer: Buffer; filename: string }
+>();
 
 export async function POST(request: Request) {
   const ip = getClientIp(request);
@@ -17,7 +20,8 @@ export async function POST(request: Request) {
   if (!rateLimit.success) {
     return NextResponse.json(
       {
-        error: "Rate limit exceeded. Please wait a minute before sending another request.",
+        error:
+          "Rate limit exceeded. Please wait a minute before sending another request.",
         code: "RATE_LIMIT_EXCEEDED",
       },
       {
@@ -45,7 +49,10 @@ export async function POST(request: Request) {
 
     if (kind !== "tailored" && kind !== "comparison") {
       return NextResponse.json(
-        { error: "Invalid export kind. Must be 'tailored' or 'comparison'", code: "INVALID_KIND" },
+        {
+          error: "Invalid export kind. Must be 'tailored' or 'comparison'",
+          code: "INVALID_KIND",
+        },
         { status: 400 }
       );
     }
@@ -54,7 +61,10 @@ export async function POST(request: Request) {
     const runRecord = getRun(tailoringRunId);
     if (!runRecord) {
       return NextResponse.json(
-        { error: `Tailoring run not found: ${tailoringRunId}`, code: "RUN_NOT_FOUND" },
+        {
+          error: `Tailoring run not found: ${tailoringRunId}`,
+          code: "RUN_NOT_FOUND",
+        },
         { status: 404 }
       );
     }
@@ -77,7 +87,9 @@ export async function POST(request: Request) {
     if (idempotencyKey) {
       const cached = idempotencyCache.get(idempotencyKey);
       if (cached) {
-        console.log(`[pdf.api] Cache hit for Idempotency-Key: ${idempotencyKey}`);
+        console.log(
+          `[pdf.api] Cache hit for Idempotency-Key: ${idempotencyKey}`
+        );
         return new Response(new Uint8Array(cached.buffer), {
           status: 200,
           headers: {
@@ -92,7 +104,8 @@ export async function POST(request: Request) {
 
     // Build HTML template based on kind
     let htmlContent = "";
-    const filename = kind === "tailored" ? "resume_tailored.pdf" : "resume_comparison.pdf";
+    const filename =
+      kind === "tailored" ? "resume_tailored.pdf" : "resume_comparison.pdf";
 
     if (kind === "tailored") {
       htmlContent = buildTailoredResumeHtml(tailoringRun);
@@ -101,12 +114,14 @@ export async function POST(request: Request) {
     }
 
     // Generate PDF buffer
-    const pdfBuffer = await generatePdf(htmlContent);
+    const pdfBuffer = await generatePdf(htmlContent, kind, tailoringRun);
 
     // Save to idempotency cache if key is present
     if (idempotencyKey) {
       idempotencyCache.set(idempotencyKey, { buffer: pdfBuffer, filename });
-      console.log(`[pdf.api] Cached generated PDF for Idempotency-Key: ${idempotencyKey}`);
+      console.log(
+        `[pdf.api] Cached generated PDF for Idempotency-Key: ${idempotencyKey}`
+      );
     }
 
     return new Response(new Uint8Array(pdfBuffer), {
@@ -120,7 +135,8 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("[pdf.api] Error exporting PDF:", error);
-    const errorMessage = error instanceof Error ? error.message : "Internal PDF engine error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Internal PDF engine error";
     return NextResponse.json(
       {
         error: `Failed to export PDF document: ${errorMessage}`,
