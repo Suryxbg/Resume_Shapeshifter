@@ -12,7 +12,7 @@ type SideBySideDiffProps = {
 export function SideBySideDiff({ resume, tailored }: SideBySideDiffProps) {
   return (
     <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white shadow-sm">
-      <table className="min-w-[720px] w-full border-collapse text-left text-sm">
+      <table className="w-full min-w-[720px] border-collapse text-left text-sm">
         <thead>
           <tr className="border-b border-zinc-200 bg-zinc-50">
             <th className="w-[36%] px-3 py-2 font-semibold text-zinc-700">
@@ -56,16 +56,21 @@ export function SideBySideDiff({ resume, tailored }: SideBySideDiffProps) {
                     <td className="px-3 py-2 text-xs text-zinc-600">
                       <p>{b.changeReason}</p>
                       <p className="mt-1">
-                        <span className="font-medium text-zinc-700">Keywords: </span>
+                        <span className="font-medium text-zinc-700">
+                          Keywords:{" "}
+                        </span>
                         {b.keywordsAddressed.join(", ") || "—"}
                       </p>
                       <p className="mt-1">
-                        <span className="font-medium text-zinc-700">Confidence: </span>
+                        <span className="font-medium text-zinc-700">
+                          Confidence:{" "}
+                        </span>
                         {b.confidence}
                         {b.riskFlag ? (
                           <>
                             {" "}
-                            · <span className="text-amber-800">{b.riskFlag}</span>
+                            ·{" "}
+                            <span className="text-amber-800">{b.riskFlag}</span>
                           </>
                         ) : null}
                       </p>

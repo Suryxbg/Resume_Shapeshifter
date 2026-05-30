@@ -50,13 +50,17 @@ export function PDFExportButton({
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = kind === "tailored" ? "resume_tailored.pdf" : "resume_comparison_report.pdf";
+      a.download =
+        kind === "tailored"
+          ? "resume_tailored.pdf"
+          : "resume_comparison_report.pdf";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Error exporting document";
+      const message =
+        err instanceof Error ? err.message : "Error exporting document";
       setError(message);
     } finally {
       setIsDownloading(false);
@@ -70,9 +74,11 @@ export function PDFExportButton({
       <div className="flex-1">
         <h3 className="text-sm font-semibold text-zinc-900">{label}</h3>
         {description ? (
-          <p className="mt-1 text-xs text-zinc-500 leading-relaxed">{description}</p>
+          <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+            {description}
+          </p>
         ) : (
-          <p className="mt-1 text-xs text-zinc-500 leading-relaxed">
+          <p className="mt-1 text-xs leading-relaxed text-zinc-500">
             {kind === "tailored"
               ? "Download your ATS-optimized tailored resume as a clean draft."
               : "Download a comprehensive visual side-by-side comparison report with insights."}
@@ -81,7 +87,7 @@ export function PDFExportButton({
       </div>
 
       {error && (
-        <div className="mt-3 rounded-lg bg-red-50 p-2.5 text-xs text-red-700 leading-relaxed">
+        <div className="mt-3 rounded-lg bg-red-50 p-2.5 text-xs leading-relaxed text-red-700">
           <strong>Download Error:</strong> {error}
         </div>
       )}
@@ -90,7 +96,7 @@ export function PDFExportButton({
         type="button"
         onClick={triggerDownload}
         disabled={isDisabled}
-        className={`mt-4 w-full flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold shadow-sm transition-all ${
+        className={`mt-4 flex w-full items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold shadow-sm transition-all ${
           isDisabled
             ? "cursor-not-allowed bg-zinc-100 text-zinc-400"
             : "bg-zinc-950 text-white hover:bg-zinc-800 active:scale-[0.98]"

@@ -8,29 +8,29 @@ Built with a highly optimized, dual-pass serverless AI pipeline, server-side Pup
 
 ## 🌟 Key Features
 
-*   **📂 Intelligent Multi-Format Ingestion:** 
-    *   Accepts `.pdf` and `.docx` files up to **5MB**.
-    *   **Magic-Byte Verification:** Server-side inspection of headers (`%PDF` and `PK\x03\x04` ZIP signatures) to prevent renamed extension attacks or file spoofing.
-    *   **Clean Normalization:** Automatically filters smart typography, normalizes white spaces, and stabilizes text layouts for high-fidelity extraction.
-*   **🧠 Atomic 2-Pass LLM Pipeline (Groq-Optimized):** 
-    *   Consolidates a legacy 7-call sequential LLM flow into a highly concurrent **2-call atomic flow**.
-    *   Leverages `llama-3.1-8b-instant` (or other Groq models) using raw native `fetch` over HTTP with zero external heavy package bloat.
-    *   Guarantees structured data integrity via strict **Zod Schema Validation** and an intelligent **JSON Repair Prompting Engine** to capture and resolve parsing errors automatically.
-*   **⚡ 77% Token Footprint Reduction:**
-    *   Structural consolidation eliminates duplicate text transfers, collapsing token payloads from **~4,400 to ~1,000 tokens** per run.
-    *   Programmatic under-the-hood truncation caps inputs to **3,500 characters** in `text-limits.ts` to preserve context budget without degrading UX.
-*   **📊 Double Server-Side PDF Rendering:**
-    *   Renders PDFs on the server using headless `puppeteer-core`, binding directly to the host's existing Chrome/Edge installation to bypass massive browser binary bloats.
-    *   **ATS-Tailored Resume:** Single-column, highly-parseable serif CV styled specifically to pass automated applicant tracking systems.
-    *   **Insights & Comparison PDF:** Premium dual-column comparative audit highlighting Match Score gains, JD requirements, gap priorities, and side-by-side bullet comparisons complete with AI confidence scores.
-    *   **Idempotency-Key Caching:** Fast memory caching of generated PDF buffers to block redundant Chrome instance launches on repeated downloads.
-*   **🛡️ Verification Gates & Anti-Hallucination Guardrails:**
-    *   **Fuzzy Consistency Audits:** Advanced post-LLM validation comparing tailored outputs against original profiles to detect and intercept fabricated job details or model hallucinations.
-    *   **Review Gate:** A frontend UX barrier locking downloads until the candidate actively reviews lower-confidence rewrites.
-    *   **IP-Based Rate Limiting:** Built-in in-memory throttle limiting clients to 10 requests per minute with native `429 Too Many Requests` responses and detailed `Retry-After` headers.
-*   **🎯 One-Click "Keyless" Demo Sandbox:**
-    *   Complete sandbox mock system. If no `GROQ_API_KEY` is present, the app gracefully falls back to structured local mock fixtures.
-    *   One-click **"Load sample data"** buttons instantly populate realistic engineering profiles to test out the visual side-by-side interface in seconds.
+- **📂 Intelligent Multi-Format Ingestion:**
+  - Accepts `.pdf` and `.docx` files up to **5MB**.
+  - **Magic-Byte Verification:** Server-side inspection of headers (`%PDF` and `PK\x03\x04` ZIP signatures) to prevent renamed extension attacks or file spoofing.
+  - **Clean Normalization:** Automatically filters smart typography, normalizes white spaces, and stabilizes text layouts for high-fidelity extraction.
+- **🧠 Atomic 2-Pass LLM Pipeline (Groq-Optimized):**
+  - Consolidates a legacy 7-call sequential LLM flow into a highly concurrent **2-call atomic flow**.
+  - Leverages `llama-3.1-8b-instant` (or other Groq models) using raw native `fetch` over HTTP with zero external heavy package bloat.
+  - Guarantees structured data integrity via strict **Zod Schema Validation** and an intelligent **JSON Repair Prompting Engine** to capture and resolve parsing errors automatically.
+- **⚡ 77% Token Footprint Reduction:**
+  - Structural consolidation eliminates duplicate text transfers, collapsing token payloads from **~4,400 to ~1,000 tokens** per run.
+  - Programmatic under-the-hood truncation caps inputs to **3,500 characters** in `text-limits.ts` to preserve context budget without degrading UX.
+- **📊 Double Server-Side PDF Rendering:**
+  - Renders PDFs on the server using headless `puppeteer-core`, binding directly to the host's existing Chrome/Edge installation to bypass massive browser binary bloats.
+  - **ATS-Tailored Resume:** Single-column, highly-parseable serif CV styled specifically to pass automated applicant tracking systems.
+  - **Insights & Comparison PDF:** Premium dual-column comparative audit highlighting Match Score gains, JD requirements, gap priorities, and side-by-side bullet comparisons complete with AI confidence scores.
+  - **Idempotency-Key Caching:** Fast memory caching of generated PDF buffers to block redundant Chrome instance launches on repeated downloads.
+- **🛡️ Verification Gates & Anti-Hallucination Guardrails:**
+  - **Fuzzy Consistency Audits:** Advanced post-LLM validation comparing tailored outputs against original profiles to detect and intercept fabricated job details or model hallucinations.
+  - **Review Gate:** A frontend UX barrier locking downloads until the candidate actively reviews lower-confidence rewrites.
+  - **IP-Based Rate Limiting:** Built-in in-memory throttle limiting clients to 10 requests per minute with native `429 Too Many Requests` responses and detailed `Retry-After` headers.
+- **🎯 One-Click "Keyless" Demo Sandbox:**
+  - Complete sandbox mock system. If no `GROQ_API_KEY` is present, the app gracefully falls back to structured local mock fixtures.
+  - One-click **"Load sample data"** buttons instantly populate realistic engineering profiles to test out the visual side-by-side interface in seconds.
 
 ---
 
@@ -99,29 +99,36 @@ The codebase is organized with strict separation between API routes, core pipeli
 ## 🚀 Getting Started
 
 ### 1. Clone the Repository
+
 ```bash
 git clone https://github.com/Suryxbg/Resume_Shapeshifter.git
 cd Resume_Shapeshifter
 ```
 
 ### 2. Install Dependencies
+
 If you have a global Node.js environment configured on your system:
+
 ```bash
 npm install
 ```
 
 If `npm` is not globally recognized (common on legacy Windows environment configurations), execute our standalone installer which automatically resolves local paths:
+
 ```powershell
 .\scripts\install-deps.ps1
 ```
 
 ### 3. Configure the Server-Side Environment
+
 Create a local config file (this is strictly excluded from version control to **keep your API keys hidden and safe**):
+
 ```bash
 cp .env.example .env.local
 ```
 
 Open `.env.local` and add your Groq key:
+
 ```ini
 GROQ_API_KEY=gsk_your_actual_key_here
 GROQ_MODEL=llama-3.1-8b-instant
@@ -133,9 +140,11 @@ GROQ_MODEL=llama-3.1-8b-instant
 > **No Key? No Problem!** If `GROQ_API_KEY` is left blank, the system automatically falls back to **Mock mode**, showing an amber inference notice on the tool but allowing you to execute every single stage of the flow using built-in golden mock fixtures.
 
 ### 4. Fire Up the Development Server
+
 ```bash
 npm run dev
 ```
+
 Open your browser and navigate to **[http://localhost:3000](http://localhost:3000)**.
 
 ---
@@ -143,6 +152,7 @@ Open your browser and navigate to **[http://localhost:3000](http://localhost:300
 ## 🎯 Experiencing the One-Click Demo
 
 To quickly inspect the high-fidelity features without typing manual resumes:
+
 1. Navigate to the tool workspace: [http://localhost:3000/tool](http://localhost:3000/tool).
 2. Click **"Load sample data"** to instantly inject a pre-formatted, highly detailed Software Engineer resume and matching job description.
 3. Select **"Analyze"** to execute Phase 1: watch the parsing animations, view the heuristic Match Score (e.g., 68%), and read the prioritized Skills Gaps.
@@ -157,11 +167,11 @@ By structurally shifting from consecutive, isolated prompts to consolidated comb
 
 ### 📊 Before vs. After Consolidation Ledger
 
-| Pipeline Stage | Legacy Workflow (7 separate calls) | Token Cost | Consolidated Workflow (2 atomic calls) | Token Cost | Performance Gain |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Stage 1: Analyze** | 1. Resume parsing<br>2. JD extraction<br>3. Original scoring<br>4. Original gaps | ~2,400 tokens | 1. Combined Analyze Prompt (`buildCombinedAnalyzeMessages`) | **~600 tokens** | **~75.0% Reduction**<br>Sends raw text once; caps input strings at 3,500 chars. |
-| **Stage 2: Tailor** | 5. Bullet rewriting<br>6. Tailored scoring<br>7. Tailored gaps | ~2,000 tokens | 2. Combined Tailor Prompt (`buildCombinedTailorMessages`) | **~400 tokens** | **~80.0% Reduction**<br>Assembles summary, rewrites bullets, & scores in one pass. |
-| **Total Pipeline** | **7 sequential calls** | **~4,400 tokens** | **2 combined calls** | **~1,000 tokens** | **~77.3% Overall Token Savings!** |
+| Pipeline Stage       | Legacy Workflow (7 separate calls)                                               | Token Cost        | Consolidated Workflow (2 atomic calls)                      | Token Cost        | Performance Gain                                                                   |
+| :------------------- | :------------------------------------------------------------------------------- | :---------------- | :---------------------------------------------------------- | :---------------- | :--------------------------------------------------------------------------------- |
+| **Stage 1: Analyze** | 1. Resume parsing<br>2. JD extraction<br>3. Original scoring<br>4. Original gaps | ~2,400 tokens     | 1. Combined Analyze Prompt (`buildCombinedAnalyzeMessages`) | **~600 tokens**   | **~75.0% Reduction**<br>Sends raw text once; caps input strings at 3,500 chars.    |
+| **Stage 2: Tailor**  | 5. Bullet rewriting<br>6. Tailored scoring<br>7. Tailored gaps                   | ~2,000 tokens     | 2. Combined Tailor Prompt (`buildCombinedTailorMessages`)   | **~400 tokens**   | **~80.0% Reduction**<br>Assembles summary, rewrites bullets, & scores in one pass. |
+| **Total Pipeline**   | **7 sequential calls**                                                           | **~4,400 tokens** | **2 combined calls**                                        | **~1,000 tokens** | **~77.3% Overall Token Savings!**                                                  |
 
 ---
 
@@ -170,10 +180,13 @@ By structurally shifting from consecutive, isolated prompts to consolidated comb
 The engine is protected by a comprehensive suite of Vitest contract and unit tests validating parsing robustness, rate limits, PDF generation, and fuzzy audits.
 
 To run all unit tests:
+
 ```bash
 npm run test
 ```
+
 To run tests without the interactive watch loop (perfect for CI/CD checks):
+
 ```bash
 npm run test -- --watch=false
 ```
@@ -187,18 +200,18 @@ npm run test -- --watch=false
 ### 🛠️ Step-by-Step Vercel Deployment
 
 1. **Import the Repository:**
-   * Go to your [Vercel Dashboard](https://vercel.com/) and click **"Add New"** > **"Project"**.
-   * Connect your GitHub account and import your repository: `Suryxbg/Resume_Shapeshifter`.
+   - Go to your [Vercel Dashboard](https://vercel.com/) and click **"Add New"** > **"Project"**.
+   - Connect your GitHub account and import your repository: `Suryxbg/Resume_Shapeshifter`.
 
 2. **Configure Build Settings:**
-   * Vercel will automatically detect **Next.js** as the framework.
-   * Leave the **Build Command** (`npm run build`), **Output Directory** (default), and **Install Command** (default) as they are.
+   - Vercel will automatically detect **Next.js** as the framework.
+   - Leave the **Build Command** (`npm run build`), **Output Directory** (default), and **Install Command** (default) as they are.
 
 3. **Configure Environment Variables:**
-   * Expand the **"Environment Variables"** dropdown and add the following key-value pairs (see details below).
+   - Expand the **"Environment Variables"** dropdown and add the following key-value pairs (see details below).
 
 4. **Deploy:**
-   * Click **"Deploy"**. Vercel will build and host your application in under a minute!
+   - Click **"Deploy"**. Vercel will build and host your application in under a minute!
 
 ---
 
@@ -206,27 +219,28 @@ npm run test -- --watch=false
 
 Here is the exhaustive checklist of environment variables you can configure in the Vercel console:
 
-| Variable Name | Required? | Default Value | Description / Purpose |
-| :--- | :--- | :--- | :--- |
-| **`GROQ_API_KEY`** | **Yes (for AI)** | *None* | Your live API key from the [Groq Console](https://console.groq.com/). If omitted, the app gracefully falls back to **Mock Demo mode** using safe sample fixtures. |
-| **`GROQ_MODEL`** | No | `llama-3.3-70b-versatile` | The LLM model used for resume analysis and atomic bullet rewriting. We recommend `llama-3.3-70b-versatile` or `llama-3.1-8b-instant`. |
-| **`PDF_FORCE_MOCK`** | No | `false` | Force standard high-fidelity ATS mock PDF buffers (useful for stable, serverless runs). |
-| **`LLM_FORCE_MOCK`** | No | `false` | Forces local mock LLM responses even if `GROQ_API_KEY` is active (useful for demo/debugging). |
+| Variable Name        | Required?        | Default Value             | Description / Purpose                                                                                                                                             |
+| :------------------- | :--------------- | :------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`GROQ_API_KEY`**   | **Yes (for AI)** | _None_                    | Your live API key from the [Groq Console](https://console.groq.com/). If omitted, the app gracefully falls back to **Mock Demo mode** using safe sample fixtures. |
+| **`GROQ_MODEL`**     | No               | `llama-3.3-70b-versatile` | The LLM model used for resume analysis and atomic bullet rewriting. We recommend `llama-3.3-70b-versatile` or `llama-3.1-8b-instant`.                             |
+| **`PDF_FORCE_MOCK`** | No               | `false`                   | Force standard high-fidelity ATS mock PDF buffers (useful for stable, serverless runs).                                                                           |
+| **`LLM_FORCE_MOCK`** | No               | `false`                   | Forces local mock LLM responses even if `GROQ_API_KEY` is active (useful for demo/debugging).                                                                     |
 
 ---
 
 ### 💡 Serverless Deployment Architecture Notes
 
-* **Graceful Headless Browser Fallback:** Since standard serverless platforms like Vercel do not include local Chrome/Edge installations (which Puppeteer requires), the application is designed to **automatically detect** the missing browser path and **gracefully fall back** to generating a lightweight, standard ATS-compliant mock PDF buffer. This keeps the application 100% stable, lightning-fast, and cost-free without needing expensive browserless.io endpoints or heavy browser binaries.
-* **Serverless Rate Limiting:** The built-in rate-limiter utilizes an in-memory sliding window. In Vercel's serverless environment, each container instance scales and tracks rate limits independently, which is ideal for portfolio applications.
+- **Graceful Headless Browser Fallback:** Since standard serverless platforms like Vercel do not include local Chrome/Edge installations (which Puppeteer requires), the application is designed to **automatically detect** the missing browser path and **gracefully fall back** to generating a lightweight, standard ATS-compliant mock PDF buffer. This keeps the application 100% stable, lightning-fast, and cost-free without needing expensive browserless.io endpoints or heavy browser binaries.
+- **Serverless Rate Limiting:** The built-in rate-limiter utilizes an in-memory sliding window. In Vercel's serverless environment, each container instance scales and tracks rate limits independently, which is ideal for portfolio applications.
 
 ---
 
 ## 📜 Architectural Insights
 
-*   For deep technical breakdowns, rate limits, schema details, and fuzzy validation mathematical models, check out [`architecture.md`](architecture.md).
-*   For exact token footprint logs, prompt strategies, and check-lists, see [`apitoken.md`](apitoken.md).
-*   For edge cases, boundary parameters, and ingestion constraints, check out [`edge-case.md`](edge-case.md).
+- For deep technical breakdowns, rate limits, schema details, and fuzzy validation mathematical models, check out [`architecture.md`](architecture.md).
+- For exact token footprint logs, prompt strategies, and check-lists, see [`apitoken.md`](apitoken.md).
+- For edge cases, boundary parameters, and ingestion constraints, check out [`edge-case.md`](edge-case.md).
 
 ---
-*Developed with 🧬 for elite candidate resume optimization workflows.*
+
+_Developed with 🧬 for elite candidate resume optimization workflows._

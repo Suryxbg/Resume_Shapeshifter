@@ -8,7 +8,10 @@ import {
   buildMockTailoredResume,
 } from "@/lib/mock-data";
 import { logPipelineStage } from "@/lib/pipeline-logger";
-import { preprocessMatchScore, preprocessTailoredResume } from "@/lib/llm-preprocess";
+import {
+  preprocessMatchScore,
+  preprocessTailoredResume,
+} from "@/lib/llm-preprocess";
 import { getRun, patchTailoringRun, type RunRecord } from "@/lib/run-store";
 import { assembleResumeForScoring } from "@/lib/resume-assembly";
 import { checkTailoringConsistency } from "@/lib/consistency";
@@ -74,7 +77,8 @@ export type TailorPipelineResult = TailorResponse & {
 };
 
 function requireAnalyzedRun(rec: RunRecord) {
-  const { resumeProfile, jobDescriptionProfile, matchOriginal } = rec.tailoringRun;
+  const { resumeProfile, jobDescriptionProfile, matchOriginal } =
+    rec.tailoringRun;
   if (!resumeProfile || !jobDescriptionProfile || !matchOriginal) {
     throw new Error("INVALID_STATE");
   }
@@ -95,7 +99,10 @@ export async function runTailorPipeline(
     const tailoredResume = buildMockTailoredResume();
     const matchTailored = buildMockMatchTailored(matchOriginal);
     const gapAnalysis = buildMockGapAnalysis();
-    const consistencyReport = checkTailoringConsistency(resumeProfile, tailoredResume);
+    const consistencyReport = checkTailoringConsistency(
+      resumeProfile,
+      tailoredResume
+    );
 
     patchTailoringRun(tailoringRunId, {
       tailoredResume,
@@ -131,7 +138,10 @@ export async function runTailorPipeline(
 
   const { tailoredResume, matchTailored, gapAnalysis } = combined;
 
-  const consistencyReport = checkTailoringConsistency(resumeProfile, tailoredResume);
+  const consistencyReport = checkTailoringConsistency(
+    resumeProfile,
+    tailoredResume
+  );
 
   patchTailoringRun(tailoringRunId, {
     tailoredResume,

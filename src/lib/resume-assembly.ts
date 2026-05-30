@@ -27,7 +27,9 @@ export function assembleResumeForScoring(
     contact: original.contact,
     summary: tailored.tailoredSummary || original.summary,
     skills:
-      tailored.tailoredSkills.length > 0 ? tailored.tailoredSkills : original.skills,
+      tailored.tailoredSkills.length > 0
+        ? tailored.tailoredSkills
+        : original.skills,
     experience,
     projects: original.projects,
     education: original.education,

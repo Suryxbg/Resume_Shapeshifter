@@ -37,7 +37,9 @@ describe("golden fixtures validate against Zod schemas", () => {
   });
 
   it("tailored-resume.json → TailoredResumeSchema", () => {
-    const r = TailoredResumeSchema.safeParse(loadFixture("tailored-resume.json"));
+    const r = TailoredResumeSchema.safeParse(
+      loadFixture("tailored-resume.json")
+    );
     expect(r.success).toBe(true);
   });
 

@@ -4,7 +4,7 @@
  */
 
 const WINDOW_MS = 60000; // 1 minute window
-const MAX_LIMIT = 10;    // max 10 requests per minute
+const MAX_LIMIT = 10; // max 10 requests per minute
 
 interface ClientRecord {
   timestamps: number[];
@@ -20,7 +20,9 @@ if (typeof global !== "undefined") {
     globalAny.rateLimitCleanupInterval = setInterval(() => {
       const now = Date.now();
       for (const [ip, record] of clientHistory.entries()) {
-        const validTimestamps = record.timestamps.filter((t) => now - t < WINDOW_MS);
+        const validTimestamps = record.timestamps.filter(
+          (t) => now - t < WINDOW_MS
+        );
         if (validTimestamps.length === 0) {
           clientHistory.delete(ip);
         } else {

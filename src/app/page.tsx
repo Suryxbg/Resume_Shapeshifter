@@ -8,17 +8,18 @@ export default function HomePage() {
           Resume Shapeshifter
         </h1>
         <p className="mt-3 text-lg leading-relaxed text-zinc-600">
-          Turn a job description into a <strong>truthful</strong>, better-aligned
-          resume draft — with match scoring, gap analysis, and a side-by-side proof
-          artifact (PDF in a later phase).
+          Turn a job description into a <strong>truthful</strong>,
+          better-aligned resume draft — with match scoring, gap analysis, and a
+          side-by-side proof artifact (PDF in a later phase).
         </p>
       </div>
 
       <section className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
         <p className="font-semibold">Truthfulness</p>
         <p className="mt-1 leading-relaxed">
-          This tool is designed to rephrase what you already did — not invent employers,
-          degrees, or metrics. Always review every bullet before you apply or export.
+          This tool is designed to rephrase what you already did — not invent
+          employers, degrees, or metrics. Always review every bullet before you
+          apply or export.
         </p>
       </section>
 
@@ -29,8 +30,9 @@ export default function HomePage() {
         <p className="text-sm leading-relaxed text-zinc-600">
           Paste your resume and a job description. With{" "}
           <code className="rounded bg-zinc-200 px-1">GROQ_API_KEY</code> in{" "}
-          <code className="rounded bg-zinc-200 px-1">.env.local</code>, analysis uses
-          Groq; without a key, the app uses mock fixtures so you can still demo the UI.
+          <code className="rounded bg-zinc-200 px-1">.env.local</code>, analysis
+          uses Groq; without a key, the app uses mock fixtures so you can still
+          demo the UI.
         </p>
         <Link
           href="/tool"

@@ -34,7 +34,8 @@ vi.mock("mammoth", () => {
 describe("Document Ingestion Pipeline", () => {
   describe("normalizeExtractedText", () => {
     it("converts smart single and double quotes to straight ones", () => {
-      const input = "This is \u201csmart double\u201d and \u2018smart single\u2019 quotes.";
+      const input =
+        "This is \u201csmart double\u201d and \u2018smart single\u2019 quotes.";
       expect(normalizeExtractedText(input)).toBe(
         `This is "smart double" and 'smart single' quotes.`
       );

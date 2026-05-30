@@ -70,7 +70,8 @@ describe("PDF Export Architecture Tests", () => {
           bullets: [
             {
               original: "Wrote high-throughput services.",
-              tailored: "Architected low-latency high-throughput server systems in Rust.",
+              tailored:
+                "Architected low-latency high-throughput server systems in Rust.",
               changeReason: "Aligned with Systems engineering job criteria.",
               keywordsAddressed: ["Rust"],
               confidence: "high",
@@ -85,7 +86,8 @@ describe("PDF Export Architecture Tests", () => {
           name: "Infrastructure",
           importance: "high",
           jdEvidence: "Missing dedicated cloud deployment experience.",
-          resumeEvidence: "No cloud experience listed in professional experience.",
+          resumeEvidence:
+            "No cloud experience listed in professional experience.",
           suggestedAction: "Mention local staging on AWS or GCP.",
           canSafelyAdd: false,
         },
@@ -103,7 +105,9 @@ describe("PDF Export Architecture Tests", () => {
       expect(html).toContain("ATS-optimized senior systems builder summary.");
       // Verifies original dates start/end lookup matched correctly
       expect(html).toContain("2020 - 2023");
-      expect(html).toContain("Architected low-latency high-throughput server systems in Rust.");
+      expect(html).toContain(
+        "Architected low-latency high-throughput server systems in Rust."
+      );
     });
 
     it("builds rich Side-by-Side comparison HTML report containing key sections", () => {
@@ -115,7 +119,9 @@ describe("PDF Export Architecture Tests", () => {
       expect(html).toContain("65%");
       expect(html).toContain("max-width: 900px;");
       expect(html).toContain("Wrote high-throughput services.");
-      expect(html).toContain("Architected low-latency high-throughput server systems in Rust.");
+      expect(html).toContain(
+        "Architected low-latency high-throughput server systems in Rust."
+      );
       expect(html).toContain("Disclaimer");
     });
   });

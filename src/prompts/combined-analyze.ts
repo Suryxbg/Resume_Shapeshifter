@@ -1,6 +1,9 @@
 import { TRUTHFULNESS_SYSTEM } from "./truthfulness";
 
-export function buildCombinedAnalyzeMessages(resumeText: string, jdText: string) {
+export function buildCombinedAnalyzeMessages(
+  resumeText: string,
+  jdText: string
+) {
   return [
     { role: "system" as const, content: TRUTHFULNESS_SYSTEM },
     {

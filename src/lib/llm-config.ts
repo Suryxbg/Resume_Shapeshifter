@@ -13,7 +13,9 @@ export function getGroqModel(): string {
 
 /** When true, skip Groq and use Phase 1 fixture builders (dev without API key). */
 export function isMockInferenceForced(): boolean {
-  return process.env.LLM_FORCE_MOCK === "true" || process.env.LLM_FORCE_MOCK === "1";
+  return (
+    process.env.LLM_FORCE_MOCK === "true" || process.env.LLM_FORCE_MOCK === "1"
+  );
 }
 
 export function resolveInferenceMode(): InferenceMode {

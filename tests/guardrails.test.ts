@@ -61,7 +61,10 @@ describe("Guardrails and Rate-Limiter Tests", () => {
         ],
       };
 
-      const report = checkTailoringConsistency(originalProfile, matchingTailored);
+      const report = checkTailoringConsistency(
+        originalProfile,
+        matchingTailored
+      );
       expect(report.isValid).toBe(true);
       expect(report.errors.length).toBe(0);
     });
@@ -78,7 +81,8 @@ describe("Guardrails and Rate-Limiter Tests", () => {
               {
                 original: "Non-existent bullet.",
                 tailored: "Architected modern cloud solutions.",
-                changeReason: "Aligned with cloud systems engineering criteria.",
+                changeReason:
+                  "Aligned with cloud systems engineering criteria.",
                 keywordsAddressed: ["cloud"],
                 confidence: "medium",
               },
@@ -87,7 +91,10 @@ describe("Guardrails and Rate-Limiter Tests", () => {
         ],
       };
 
-      const report = checkTailoringConsistency(originalProfile, hallucinatedEmployer);
+      const report = checkTailoringConsistency(
+        originalProfile,
+        hallucinatedEmployer
+      );
       expect(report.isValid).toBe(false);
       expect(report.errors[0]).toContain("Invented Employer Found");
       expect(report.hallucinatedCompanies).toContain("Invented Global Tech");
@@ -114,10 +121,15 @@ describe("Guardrails and Rate-Limiter Tests", () => {
         ],
       };
 
-      const report = checkTailoringConsistency(originalProfile, hallucinatedBullet);
+      const report = checkTailoringConsistency(
+        originalProfile,
+        hallucinatedBullet
+      );
       expect(report.isValid).toBe(false);
       expect(report.errors[0]).toContain("Unsanctioned Bullet Point");
-      expect(report.hallucinatedBullets).toContain("Fabricated original bullet details.");
+      expect(report.hallucinatedBullets).toContain(
+        "Fabricated original bullet details."
+      );
     });
   });
 });

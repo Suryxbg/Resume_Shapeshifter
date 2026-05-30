@@ -17,13 +17,16 @@ export function ScoreCard({ title, score }: ScoreCardProps) {
         {score.overallScore}
         <span className="text-lg font-normal text-zinc-500">/100</span>
       </p>
-      <p className="mt-1.5 text-[11px] leading-normal text-zinc-400 italic">
-        * Heuristic analysis estimate based on semantic skill coverage, keyword density, seniority level matching, and target JD responsibility overlap.
+      <p className="mt-1.5 text-[11px] italic leading-normal text-zinc-400">
+        * Heuristic analysis estimate based on semantic skill coverage, keyword
+        density, seniority level matching, and target JD responsibility overlap.
       </p>
       <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
         <div>
           <dt className="text-zinc-500">Skills</dt>
-          <dd className="font-medium tabular-nums">{score.skillCoverageScore}</dd>
+          <dd className="font-medium tabular-nums">
+            {score.skillCoverageScore}
+          </dd>
         </div>
         <div>
           <dt className="text-zinc-500">Responsibilities</dt>
@@ -46,7 +49,9 @@ export function ScoreCard({ title, score }: ScoreCardProps) {
           {score.criticalMissingRequirements.join(" · ")}
         </div>
       )}
-      <p className="mt-3 text-sm leading-relaxed text-zinc-600">{score.explanation}</p>
+      <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+        {score.explanation}
+      </p>
     </section>
   );
 }

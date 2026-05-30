@@ -14,7 +14,8 @@ export async function POST(request: Request) {
   if (!rateLimit.success) {
     return NextResponse.json(
       {
-        error: "Rate limit exceeded. Please wait a minute before sending another request.",
+        error:
+          "Rate limit exceeded. Please wait a minute before sending another request.",
         code: "RATE_LIMIT_EXCEEDED",
       },
       {

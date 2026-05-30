@@ -16,17 +16,17 @@ This plan implements the system described in [`architecture.md`](architecture.md
 
 ## Phase map (summary)
 
-| Phase | Name | Primary outcome |
-|-------|------|-----------------|
-| 0 | Foundation | Repo, stack, schemas, mock pipeline, no LLM |
-| 1 | UI + mock vertical slice | All screens + `POST /analyze` / `POST /tailor` returning **fixtures** |
-| 2 | LLM pipeline | Real parsers, match, tailor, gaps; `TailoringRun` persisted in MVP store |
-| 3 | Ingestion + files | PDF/DOCX extraction, normalization, limits |
-| 4 | PDF export | Tailored PDF + comparison PDF per architecture.md §4.9 |
-| 5 | Guardrails + validation | Consistency checks, retries, review gate, stronger Zod |
-| 6 | Polish + demo | UX, samples, observability, rate limits, performance |
+| Phase | Name                     | Primary outcome                                                          |
+| ----- | ------------------------ | ------------------------------------------------------------------------ |
+| 0     | Foundation               | Repo, stack, schemas, mock pipeline, no LLM                              |
+| 1     | UI + mock vertical slice | All screens + `POST /analyze` / `POST /tailor` returning **fixtures**    |
+| 2     | LLM pipeline             | Real parsers, match, tailor, gaps; `TailoringRun` persisted in MVP store |
+| 3     | Ingestion + files        | PDF/DOCX extraction, normalization, limits                               |
+| 4     | PDF export               | Tailored PDF + comparison PDF per architecture.md §4.9                   |
+| 5     | Guardrails + validation  | Consistency checks, retries, review gate, stronger Zod                   |
+| 6     | Polish + demo            | UX, samples, observability, rate limits, performance                     |
 
-*Phases 3 and 4 can be partially reordered:* you may start HTML→PDF with **text-only** resumes (Phase 4 subset) before full binary ingestion, as long as the **final** milestone includes PDF/DOCX per product spec.
+_Phases 3 and 4 can be partially reordered:_ you may start HTML→PDF with **text-only** resumes (Phase 4 subset) before full binary ingestion, as long as the **final** milestone includes PDF/DOCX per product spec.
 
 ---
 
@@ -326,15 +326,15 @@ Not required for initial phases; trace to **non-goals** / future in `context.md`
 
 ## Milestone checklist (quick reference)
 
-| # | Milestone | Phase |
-|---|-----------|--------|
-| 1 | Schemas + fixtures validate in CI | 0 |
-| 2 | Full UI with mock APIs | 1 |
-| 3 | Live analyze + tailor + gaps + dual scores | 2 |
-| 4 | PDF/DOCX upload path | 3 |
-| 5 | Both PDFs downloadable | 4 |
-| 6 | Review gate + consistency checks + rate limits | 5 |
-| 7 | Demo-ready polish + README | 6 |
+| #   | Milestone                                      | Phase |
+| --- | ---------------------------------------------- | ----- |
+| 1   | Schemas + fixtures validate in CI              | 0     |
+| 2   | Full UI with mock APIs                         | 1     |
+| 3   | Live analyze + tailor + gaps + dual scores     | 2     |
+| 4   | PDF/DOCX upload path                           | 3     |
+| 5   | Both PDFs downloadable                         | 4     |
+| 6   | Review gate + consistency checks + rate limits | 5     |
+| 7   | Demo-ready polish + README                     | 6     |
 
 ---
 

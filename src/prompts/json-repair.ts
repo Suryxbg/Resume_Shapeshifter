@@ -1,4 +1,7 @@
-export function buildJsonRepairMessages(invalidOutput: string, schemaHint: string) {
+export function buildJsonRepairMessages(
+  invalidOutput: string,
+  schemaHint: string
+) {
   return [
     {
       role: "system" as const,

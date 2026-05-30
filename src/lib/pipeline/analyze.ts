@@ -115,7 +115,8 @@ export async function runAnalyzePipeline(input: {
     })
   );
 
-  const { resumeProfile, jobDescriptionProfile, matchOriginal, gapAnalysis } = combined;
+  const { resumeProfile, jobDescriptionProfile, matchOriginal, gapAnalysis } =
+    combined;
 
   patchTailoringRun(runId, {
     resumeProfile,

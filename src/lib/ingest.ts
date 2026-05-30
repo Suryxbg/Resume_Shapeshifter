@@ -45,7 +45,8 @@ export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
     }
     return data.text;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown PDF parsing error";
+    const message =
+      error instanceof Error ? error.message : "Unknown PDF parsing error";
     throw new Error(`PDF extraction failed: ${message}`);
   }
 }
@@ -61,7 +62,8 @@ export async function extractTextFromDocx(buffer: Buffer): Promise<string> {
     }
     return result.value;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown DOCX parsing error";
+    const message =
+      error instanceof Error ? error.message : "Unknown DOCX parsing error";
     throw new Error(`DOCX extraction failed: ${message}`);
   }
 }

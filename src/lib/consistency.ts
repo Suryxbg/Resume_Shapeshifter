@@ -46,7 +46,9 @@ export function checkTailoringConsistency(
     });
 
     if (!match) {
-      errors.push(`Invented Employer Found: Tailored resume contains employer "${tailoredExp.company}" which does not exist in your original profile.`);
+      errors.push(
+        `Invented Employer Found: Tailored resume contains employer "${tailoredExp.company}" which does not exist in your original profile.`
+      );
       hallucinatedCompanies.push(tailoredExp.company);
       continue;
     }
@@ -55,11 +57,16 @@ export function checkTailoringConsistency(
     const titleMatch = originalExperiences.find((origExp) => {
       const origCompanyNorm = normalizeForComparison(origExp.company);
       const origTitleNorm = normalizeForComparison(origExp.title);
-      return origCompanyNorm === tailoredCompanyNorm && origTitleNorm === tailoredTitleNorm;
+      return (
+        origCompanyNorm === tailoredCompanyNorm &&
+        origTitleNorm === tailoredTitleNorm
+      );
     });
 
     if (!titleMatch) {
-      warnings.push(`Title Adjustment: Experience at "${tailoredExp.company}" had title modified from "${match.title}" to "${tailoredExp.title}".`);
+      warnings.push(
+        `Title Adjustment: Experience at "${tailoredExp.company}" had title modified from "${match.title}" to "${tailoredExp.title}".`
+      );
     }
 
     // 2. Audit experience bullets inside this entry
@@ -72,18 +79,24 @@ export function checkTailoringConsistency(
       // Verify that bullet.original existed in the original experience
       const existsInOriginal = originalBulletsNorm.includes(origBulletNorm);
       if (!existsInOriginal) {
-        errors.push(`Unsanctioned Bullet Point: Tailored experience at "${tailoredExp.company}" refers to an original bullet point that is missing or fabricated.`);
+        errors.push(
+          `Unsanctioned Bullet Point: Tailored experience at "${tailoredExp.company}" refers to an original bullet point that is missing or fabricated.`
+        );
         hallucinatedBullets.push(tailoredBullet.original);
       }
 
       // Check for low-confidence warnings
       if (tailoredBullet.confidence === "low") {
-        warnings.push(`Low-Confidence Update: Tailoring at "${tailoredExp.company}" has low AI confidence. Reason: ${tailoredBullet.changeReason}`);
+        warnings.push(
+          `Low-Confidence Update: Tailoring at "${tailoredExp.company}" has low AI confidence. Reason: ${tailoredBullet.changeReason}`
+        );
       }
 
       // Check for risk flags
       if (tailoredBullet.riskFlag) {
-        warnings.push(`Accuracy Risk Warning: Bullet at "${tailoredExp.company}" flagged for risk: ${tailoredBullet.riskFlag}`);
+        warnings.push(
+          `Accuracy Risk Warning: Bullet at "${tailoredExp.company}" flagged for risk: ${tailoredBullet.riskFlag}`
+        );
       }
     }
   }

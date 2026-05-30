@@ -7,15 +7,15 @@ Edge cases to watch while coding: [`edge-case.md`](edge-case.md).
 
 ## Summary
 
-| Phase | Name                                | Status      | Last updated |
-| ----- | ----------------------------------- | ----------- | ------------ |
-| 0     | Foundation and data contracts       | **Done**    | 2026-05-19   |
-| 1     | UI + mock vertical slice            | **Done**    | 2026-05-19   |
-| 2     | LLM integration (Groq)              | **Done**    | 2026-05-19   |
-| 3     | Document ingestion (PDF / DOCX)     | **Done**    | 2026-05-19   |
-| 4     | PDF export                          | **Done**    | 2026-05-19   |
-| 5     | Guardrails, validation, review gate | **Done**    | 2026-05-19   |
-| 6     | Polish + demo                       | **Done**    | 2026-05-19   |
+| Phase | Name                                | Status   | Last updated |
+| ----- | ----------------------------------- | -------- | ------------ |
+| 0     | Foundation and data contracts       | **Done** | 2026-05-19   |
+| 1     | UI + mock vertical slice            | **Done** | 2026-05-19   |
+| 2     | LLM integration (Groq)              | **Done** | 2026-05-19   |
+| 3     | Document ingestion (PDF / DOCX)     | **Done** | 2026-05-19   |
+| 4     | PDF export                          | **Done** | 2026-05-19   |
+| 5     | Guardrails, validation, review gate | **Done** | 2026-05-19   |
+| 6     | Polish + demo                       | **Done** | 2026-05-19   |
 
 ---
 
@@ -153,14 +153,13 @@ npm run dev
 - **Documentation:** Updated `README.md` to fully reflect the capabilities of the portfolio project, highlighting key features (ingestion, tailoring, guardrails, PDF generation) and laying out clear steps for running the one-click demo.
 - **Hardening:** Confirmed robust parallelization of LLM queries using `Promise.all` in `analyze.ts` and `tailor.ts` for max performance. Confirmed error boundary rendering and graceful alert degradation mechanisms inside `PDFExportButton.tsx` and the core pipeline.
 
-
 ## Changelog (optional)
 
-| Date       | Phase | Note |
-| ---------- | ----- | ---- |
-| 2026-05-19 | 0     | Initial repo bootstrap per implementation plan. |
-| 2026-05-19 | 1     | Mock analyze/tailor APIs, `/tool` flow, components. |
-| 2026-05-19 | 2     | Groq pipeline via fetch; mock fallback without API key; assembly + tests. |
-| 2026-05-19 | 3     | PDF/DOCX ingestion API, magic byte checks, interactive upload UI, tests. |
+| Date       | Phase | Note                                                                                                    |
+| ---------- | ----- | ------------------------------------------------------------------------------------------------------- |
+| 2026-05-19 | 0     | Initial repo bootstrap per implementation plan.                                                         |
+| 2026-05-19 | 1     | Mock analyze/tailor APIs, `/tool` flow, components.                                                     |
+| 2026-05-19 | 2     | Groq pipeline via fetch; mock fallback without API key; assembly + tests.                               |
+| 2026-05-19 | 3     | PDF/DOCX ingestion API, magic byte checks, interactive upload UI, tests.                                |
 | 2026-05-19 | 4     | PDF engine via local system Chrome/Edge, tailored & comparison HTML templates, export API, idempotency. |
 | 2026-05-19 | 5     | Stronger schemas, IP-based rate limiting, post-LLM consistency audits, required review checkbox, tests. |

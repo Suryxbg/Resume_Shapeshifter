@@ -67,7 +67,8 @@ export async function POST(request: Request) {
     if (!isPdfMime && !isDocxMime) {
       return NextResponse.json(
         {
-          error: "Unsupported file type. Please upload a PDF (.pdf) or DOCX (.docx) resume.",
+          error:
+            "Unsupported file type. Please upload a PDF (.pdf) or DOCX (.docx) resume.",
           code: "INVALID_FILE_TYPE",
         },
         { status: 400 }
@@ -104,7 +105,8 @@ export async function POST(request: Request) {
     if (!normalizedText || normalizedText.length < 10) {
       return NextResponse.json(
         {
-          error: "Could not extract readable text from the document. Please ensure it has a text layer (is not a scanned image) and is not password-protected.",
+          error:
+            "Could not extract readable text from the document. Please ensure it has a text layer (is not a scanned image) and is not password-protected.",
           code: "EMPTY_EXTRACTION",
         },
         { status: 400 }
@@ -119,10 +121,14 @@ export async function POST(request: Request) {
       error instanceof Error ? error.message : "Internal ingestion failure";
 
     // Handle mammoth or pdf-parse throw errors
-    if (errorMessage.includes("password-protected") || errorMessage.includes("encrypted")) {
+    if (
+      errorMessage.includes("password-protected") ||
+      errorMessage.includes("encrypted")
+    ) {
       return NextResponse.json(
         {
-          error: "Password-protected PDFs are not supported. Please upload an unlocked PDF.",
+          error:
+            "Password-protected PDFs are not supported. Please upload an unlocked PDF.",
           code: "ENCRYPTED_FILE",
         },
         { status: 400 }

@@ -8,7 +8,9 @@ export type RunRecord = {
   jdText: string;
 };
 
-const g = globalThis as unknown as { __tailoringRunStore?: Map<string, RunRecord> };
+const g = globalThis as unknown as {
+  __tailoringRunStore?: Map<string, RunRecord>;
+};
 
 function getMap(): Map<string, RunRecord> {
   if (!g.__tailoringRunStore) {

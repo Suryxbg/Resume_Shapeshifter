@@ -6,13 +6,13 @@ This document describes the target system architecture for **Resume Shapeshifter
 
 ## 1. Architecture Goals
 
-| Goal | Implication |
-|------|-------------|
-| **Truthfulness first** | Parsing and LLM steps must preserve provenance; rewrites carry confidence, risk flags, and evidence. |
-| **Explainability** | Match scores, gaps, and bullet changes must be inspectable, not opaque numbers. |
-| **Vertical slice** | Prefer one end-to-end path (paste → analyze → tailor → preview → PDF) over scattered partial features. |
-| **Structured interchange** | Resume, JD, scores, tailoring output, and gaps should use validated JSON schemas between stages. |
-| **Portfolio-quality artifact** | Side-by-side PDF is a first-class deliverable, not an afterthought. |
+| Goal                           | Implication                                                                                            |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| **Truthfulness first**         | Parsing and LLM steps must preserve provenance; rewrites carry confidence, risk flags, and evidence.   |
+| **Explainability**             | Match scores, gaps, and bullet changes must be inspectable, not opaque numbers.                        |
+| **Vertical slice**             | Prefer one end-to-end path (paste → analyze → tailor → preview → PDF) over scattered partial features. |
+| **Structured interchange**     | Resume, JD, scores, tailoring output, and gaps should use validated JSON schemas between stages.       |
+| **Portfolio-quality artifact** | Side-by-side PDF is a first-class deliverable, not an afterthought.                                    |
 
 ### Non-Goals (MVP)
 
@@ -108,13 +108,13 @@ flowchart LR
 
 **Stack (recommended):** Next.js, React, TypeScript, Tailwind CSS, Shadcn UI.
 
-| Screen / area | Responsibility |
-|---------------|----------------|
-| Landing | Product explanation, trust framing (truthfulness, user review). |
-| Resume / JD input | Paste text; optional file upload (PDF/DOCX) with client-side size/type checks. |
-| Analysis | JD summary, extracted requirements, **original** match score, initial gaps. |
-| Tailoring review | Side-by-side original vs tailored sections; per-bullet metadata (reason, keywords, confidence, risk). |
-| Export | Download tailored resume PDF and **comparison PDF**; optional future Markdown/DOCX. |
+| Screen / area     | Responsibility                                                                                        |
+| ----------------- | ----------------------------------------------------------------------------------------------------- |
+| Landing           | Product explanation, trust framing (truthfulness, user review).                                       |
+| Resume / JD input | Paste text; optional file upload (PDF/DOCX) with client-side size/type checks.                        |
+| Analysis          | JD summary, extracted requirements, **original** match score, initial gaps.                           |
+| Tailoring review  | Side-by-side original vs tailored sections; per-bullet metadata (reason, keywords, confidence, risk). |
+| Export            | Download tailored resume PDF and **comparison PDF**; optional future Markdown/DOCX.                   |
 
 **Principles:** Presentation components stay thin; call server actions or REST/JSON endpoints; all Zod-validated responses typed on the client.
 
@@ -262,11 +262,11 @@ Instructions must enforce (see `context.md` §7.7, §11):
 
 REST or RPC-style routes under `/api` (Next.js) or FastAPI prefix `/v1`:
 
-| Operation | Description |
-|-----------|-------------|
-| `POST /analyze` | Body: resume input + JD text → parsed profiles + original match + initial gaps (may be split into parallel internal calls). |
-| `POST /tailor` | Body: run id or profiles → tailored resume + tailored match + gap refresh. |
-| `POST /export/pdf` | Body: run id + export kind (`tailored` \| `comparison`) → PDF stream or signed URL. |
+| Operation          | Description                                                                                                                 |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `POST /analyze`    | Body: resume input + JD text → parsed profiles + original match + initial gaps (may be split into parallel internal calls). |
+| `POST /tailor`     | Body: run id or profiles → tailored resume + tailored match + gap refresh.                                                  |
+| `POST /export/pdf` | Body: run id + export kind (`tailored` \| `comparison`) → PDF stream or signed URL.                                         |
 
 **Idempotency:** Use client-generated `Idempotency-Key` for export and expensive tailor steps.
 
@@ -364,24 +364,24 @@ Add `/tests` for contract tests on schemas and golden JSON fixtures when impleme
 
 ## 13. Phased Delivery vs Architecture
 
-| Phase (from `context.md` §15) | Architectural focus |
-|-------------------------------|----------------------|
-| Phase 1: Static prototype | UI + mock JSON; fake match/tailor/gap payloads through same schemas. |
-| Phase 2: LLM integration | Prompt modules, validation, error handling, run envelope. |
-| Phase 3: PDF export | HTML templates, headless PDF, asset pipeline. |
-| Phase 4: Validation | Stronger Zod, unsupported-claim checks, user confirmation flags. |
-| Phase 5: Polish | UX, samples, loading/error states, performance. |
+| Phase (from `context.md` §15) | Architectural focus                                                  |
+| ----------------------------- | -------------------------------------------------------------------- |
+| Phase 1: Static prototype     | UI + mock JSON; fake match/tailor/gap payloads through same schemas. |
+| Phase 2: LLM integration      | Prompt modules, validation, error handling, run envelope.            |
+| Phase 3: PDF export           | HTML templates, headless PDF, asset pipeline.                        |
+| Phase 4: Validation           | Stronger Zod, unsupported-claim checks, user confirmation flags.     |
+| Phase 5: Polish               | UX, samples, loading/error states, performance.                      |
 
 ---
 
 ## 14. Risks and Architectural Mitigations
 
-| Risk | Mitigation |
-|------|------------|
-| PDF parse order wrong | Editable raw text step; warn on low parse confidence. |
+| Risk                      | Mitigation                                                                       |
+| ------------------------- | -------------------------------------------------------------------------------- |
+| PDF parse order wrong     | Editable raw text step; warn on low parse confidence.                            |
 | LLM overstates experience | Risk flags, confidence, gap engine, disclaimers, user review gate before export. |
-| Invalid JSON | Schema + retry + user-visible “fix and retry”. |
-| Score false precision | Always show explanation + sub-scores; label as heuristic. |
+| Invalid JSON              | Schema + retry + user-visible “fix and retry”.                                   |
+| Score false precision     | Always show explanation + sub-scores; label as heuristic.                        |
 
 ---
 

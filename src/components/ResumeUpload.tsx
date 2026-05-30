@@ -15,9 +15,12 @@ export function ResumeUpload({
 }: ResumeUploadProps) {
   const [isDragActive, setIsDragActive] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [fileDetails, setFileDetails] = useState<{ name: string; size: string } | null>(null);
+  const [fileDetails, setFileDetails] = useState<{
+    name: string;
+    size: string;
+  } | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const formatFileSize = (bytes: number): string => {
@@ -51,7 +54,8 @@ export function ResumeUpload({
 
         onUploadSuccess(data.text, file.name);
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Error uploading file";
+        const message =
+          err instanceof Error ? err.message : "Error uploading file";
         setUploadError(message);
         setFileDetails(null);
         onUploadError(message);
@@ -134,7 +138,7 @@ export function ResumeUpload({
           fileDetails || uploadError ? "" : "cursor-pointer"
         } ${
           isDragActive
-            ? "border-zinc-800 bg-zinc-50 scale-[0.99] ring-4 ring-zinc-100"
+            ? "scale-[0.99] border-zinc-800 bg-zinc-50 ring-4 ring-zinc-100"
             : "border-zinc-300 bg-white hover:border-zinc-500 hover:bg-zinc-50/50"
         } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
       >
@@ -255,7 +259,7 @@ export function ResumeUpload({
             <p className="text-sm font-semibold text-red-800">
               Extraction Failed
             </p>
-            <p className="mt-1 max-w-md text-xs text-red-600 leading-relaxed">
+            <p className="mt-1 max-w-md text-xs leading-relaxed text-red-600">
               {uploadError}
             </p>
             <button

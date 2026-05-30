@@ -5,10 +5,7 @@ export {
   ResumeProfileSchema,
   type ResumeProfile,
 } from "./resume";
-export {
-  JobDescriptionProfileSchema,
-  type JobDescriptionProfile,
-} from "./jd";
+export { JobDescriptionProfileSchema, type JobDescriptionProfile } from "./jd";
 export { MatchScoreSchema, type MatchScore } from "./match";
 export {
   ConfidenceSchema,
