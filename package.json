@@ -12,7 +12,11 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"tests/**/*.ts\" \"*.{ts,json,md}\""
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "drizzle-orm": "^0.45.2",
+    "jose": "^6.2.3",
     "mammoth": "^1.8.0",
+    "mysql2": "^3.22.4",
     "next": "^15.1.7",
     "pdf-parse": "^1.1.1",
     "puppeteer-core": "^24.2.1",

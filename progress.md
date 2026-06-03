@@ -25,7 +25,9 @@ Edge cases to watch while coding: [`edge-case.md`](edge-case.md).
 
 **What was implemented**
 
-- Next.js 15 (App Router), TypeScript (strict), Tailwind CSS, ESLint, Prettier.
+### Completed Features
+- **Phase 0:** Next.js project initialized with Tailwind CSS, Shadcn UI, and Prettier formatting.
+- **Phase 1 (Authentication):** Implemented MySQL database with Drizzle ORM, JWT-based auth via `jose`, `bcryptjs` password hashing, and Edge middleware route protection. Added login and signup UI with integrated state in `SiteHeader`.
 - Canonical Zod schemas and inferred types under `src/schemas/`.
 - Golden JSON fixtures + Vitest contract tests.
 - API shell: `POST /api/validate`, `POST /api/runs`, `GET /api/runs/[id]`.
@@ -116,6 +118,7 @@ npm run dev
 **What was implemented**
 
 - **Server-Side PDF Engine:** Integrated `puppeteer-core` to perform server-side rendering of PDF documents using the host machine's globally installed Chrome or Edge executable. This completely bypasses the need to download massive browser binaries during installation.
+- **Serverless / Vercel Plain Text Fallback:** Created a programmatic PDF 1.4 compiler (`generateValidMockPdf` in `src/lib/pdf.ts`) that builds standard-compliant PDF documents from plain text lines. When running on browser-less serverless environments like Vercel, the engine automatically detects the absence of Chromium and falls back to this lightweight generator to output structured text resumes and comparison audits without crashing.
 - **Elegantly Styled HTML Templates (`src/lib/pdf.ts`):**
   - **ATS-Tailored Resume PDF:** Elegant, single-column document using classic serif typography designed to pass parsing criteria for corporate tracking systems. Includes Candidate contact, Summary, core competencies/skills, professional Experience (looks up dates from the original profile), and other key categories (Projects, Education, Certifications) from the original resume.
   - **Insights & Comparison PDF:** Premium dual-column audit report displaying Job Title, Company, heuristics match score gains (Original Match vs. Tailored Match overall scores), Target JD requirements summary (Seniority, Skills, Responsibilities), side-by-side original vs. tailored experience bullet diffs (highlighting confidence and change reasons), detailed gap priority audit, and a professional validation disclaimer.

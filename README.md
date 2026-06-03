@@ -12,6 +12,10 @@ Built with a highly optimized, dual-pass serverless AI pipeline, server-side Pup
   - Accepts `.pdf` and `.docx` files up to **5MB**.
   - **Magic-Byte Verification:** Server-side inspection of headers (`%PDF` and `PK\x03\x04` ZIP signatures) to prevent renamed extension attacks or file spoofing.
   - **Clean Normalization:** Automatically filters smart typography, normalizes white spaces, and stabilizes text layouts for high-fidelity extraction.
+- **🔒 Secure Authentication & Data Persistence:**
+  - Robust user authentication powered by **JWT (JSON Web Tokens)** stored in HTTP-only cookies and **bcryptjs** password hashing.
+  - Edge-compatible Next.js Middleware route protection ensuring uncompromising security.
+  - Relational data persistence backed by **MySQL** and managed elegantly through **Drizzle ORM**.
 - **🧠 Atomic 2-Pass LLM Pipeline (Groq-Optimized):**
   - Consolidates a legacy 7-call sequential LLM flow into a highly concurrent **2-call atomic flow**.
   - Leverages `llama-3.1-8b-instant` (or other Groq models) using raw native `fetch` over HTTP with zero external heavy package bloat.
@@ -132,6 +136,8 @@ Open `.env.local` and add your Groq key:
 ```ini
 GROQ_API_KEY=gsk_your_actual_key_here
 GROQ_MODEL=llama-3.1-8b-instant
+DATABASE_URL="mysql://root:root@localhost:3306/resume_shapeshifter"
+JWT_SECRET="your-super-secret-jwt-key"
 ```
 
 > [!IMPORTANT]
@@ -225,6 +231,8 @@ Here is the exhaustive checklist of environment variables you can configure in t
 | **`GROQ_MODEL`**     | No               | `llama-3.3-70b-versatile` | The LLM model used for resume analysis and atomic bullet rewriting. We recommend `llama-3.3-70b-versatile` or `llama-3.1-8b-instant`.                             |
 | **`PDF_FORCE_MOCK`** | No               | `false`                   | Force standard high-fidelity ATS mock PDF buffers (useful for stable, serverless runs).                                                                           |
 | **`LLM_FORCE_MOCK`** | No               | `false`                   | Forces local mock LLM responses even if `GROQ_API_KEY` is active (useful for demo/debugging).                                                                     |
+| **`DATABASE_URL`**   | **Yes (for DB)** | _None_                    | MySQL database connection string. Required for user accounts and data persistence.                                                                                |
+| **`JWT_SECRET`**     | **Yes (for Auth)**| _None_                    | Secret key for signing and verifying JSON Web Tokens.                                                                                                             |
 
 ---
 

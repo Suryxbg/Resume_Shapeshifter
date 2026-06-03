@@ -18,11 +18,13 @@ Ensure you have a `.env` file in the root of the project with your Groq API cred
 cp .env.example .env
 ```
 
-Fill in your `GROQ_API_KEY` (if empty, the app will gracefully fall back to mock data):
+Fill in your `GROQ_API_KEY` (if empty, the app will gracefully fall back to mock data), and add database details:
 
 ```env
 GROQ_API_KEY=gsk_your_groq_api_key_here
 GROQ_MODEL=llama-3.3-70b-versatile
+DATABASE_URL="mysql://root:root@db:3306/resume_shapeshifter"
+JWT_SECRET="your-super-secret-jwt-key"
 ```
 
 ### Step 2: Spin Up the Container
@@ -92,11 +94,13 @@ const nextConfig: NextConfig = {
 
 ### 2. Dynamic Chromium Engine Path (`src/lib/pdf.ts`)
 
-The PDF generation engine has been upgraded to support Linux container pathways and custom environments:
+The PDF generation engine is environment-aware and features a graceful fallback pipeline:
 
 - Checks `process.env.PUPPETEER_EXECUTABLE_PATH` first.
 - Automatically resolves to containerized Chromium `/usr/bin/chromium-browser` or `/usr/bin/google-chrome` under Linux.
-- Falls back seamlessly to system Chrome/Edge paths on Windows, or a robust mock buffer during CI/CD or local test runs.
+- Falls back seamlessly to system Chrome/Edge paths on Windows for local development.
+- **Serverless / Vercel Fallback:** When running on browser-less cloud environments like Vercel, the engine detects that no system browser is found and falls back programmatically to compile a plain text PDF structure (`generateValidMockPdf`) containing structured text data (avoiding deployment package crashes or execution timeouts).
+- **Docker Integration:** The Docker image pre-installs Chromium and its system dependencies inside Alpine Linux, ensuring it always generates high-fidelity visual PDF outputs.
 
 ### 3. Container Optimization & Security (`Dockerfile`)
 
@@ -118,6 +122,8 @@ The following environment variables can be configured inside `.env` or injected 
 | `GROQ_MODEL`                | `llama-3.3-70b-versatile`   | LLM model used for tailoring resumes.                                            |
 | `PUPPETEER_EXECUTABLE_PATH` | `/usr/bin/chromium-browser` | Executable path of the Chromium browser inside the container.                    |
 | `PDF_FORCE_MOCK`            | `false`                     | Set to `true` to skip puppeteer rendering and output immediate Mock PDF buffers. |
+| `DATABASE_URL`              | _(None)_                    | MySQL connection string for user data and authentication.                        |
+| `JWT_SECRET`                | _(None)_                    | Secret key used to sign and verify JSON Web Tokens.                              |
 
 ---
 
@@ -140,7 +146,7 @@ The following environment variables can be configured inside `.env` or injected 
 - **Status:** **This warning is completely harmless.** It does not impact the build success (which exits with code 0) or the integrity of the standalone container build, as these Windows-specific folders are not utilized in the Alpine Linux runtime environment. You can safely ignore this.
 - **Verification:** Run `npm run build` locally to verify the `.next/standalone` folder generates correctly before containerizing.
 
-### Logs show: `Mock PDF Generated Successfully`
+### Logs show: `Mock PDF Generated Successfully - Serverless Fallback Mode`
 
-- **Cause:** The app is falling back to mock mode because no browser was detected or `PDF_FORCE_MOCK=true` is enabled.
-- **Solution:** Check the container logs to ensure Chromium is successfully installed at `/usr/bin/chromium-browser` and that `PUPPETEER_EXECUTABLE_PATH` is pointed correctly.
+- **Cause:** The app is falling back to programmatic plain text mode because no browser binary was detected in the environment or `PDF_FORCE_MOCK=true` is enabled.
+- **Solution:** For Docker deployments, check the container logs to ensure Chromium is successfully installed at `/usr/bin/chromium-browser` and that `PUPPETEER_EXECUTABLE_PATH` is pointed correctly. If deployed on Vercel, this is the expected and designed fallback behavior to bypass serverless platform limitations.

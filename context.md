@@ -400,6 +400,10 @@ The comparison PDF should include:
 - Gap analysis section.
 - Disclaimer that the user must verify all content before use.
 
+**Environment-Aware PDF Generation Strategy:**
+- **Docker / Local environments:** Generates high-fidelity visual layout PDFs by rendering HTML/CSS templates using Puppeteer/headless Chromium (standard in containerized Docker setups).
+- **Vercel / Serverless environments:** Triggers plain text fallback. Vercel serverless functions cannot launch headless Chromium. The system falls back to programmatically writing structured plain text lines directly to a standard PDF binary, ensuring zero-dependency compatibility and preventing timeouts.
+
 ---
 
 ## 10. Suggested Architecture
@@ -439,13 +443,12 @@ Core services:
 
 ### Data Storage
 
-For MVP, local/session-based storage is acceptable.
+For MVP, a MySQL database is used to store user profiles and hashed passwords via Drizzle ORM.
+JWT tokens are used for stateless authentication and stored in HTTP-only cookies.
 
-Optional persistent storage:
+Persistent storage:
 
-- PostgreSQL.
-- Supabase.
-- SQLite for local prototype.
+- MySQL (via Docker for local development).
 
 Suggested entities:
 
@@ -589,7 +592,7 @@ A practical Cursor-friendly stack:
 - **Backend:** Next.js API routes or FastAPI
 - **LLM:** [Groq](https://groq.com/) API with a server-held **Groq API key**; use Groq-hosted models that support **structured JSON** (or strict prompt + parse) for extraction, scoring, rewrite, and gap stages
 - **Validation:** Zod
-- **PDF Generation:** Playwright PDF, React PDF, or Puppeteer
+- **PDF Generation:** Puppeteer (for high-fidelity visual HTML-to-PDF generation in Docker/local) with programmatic plain text PDF fallback (for browser-less Vercel serverless deployments)
 - **Document Parsing:** pdf-parse, mammoth, or Python alternatives
 - **Storage:** SQLite, Supabase, or local JSON for MVP
 

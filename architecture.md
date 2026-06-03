@@ -24,7 +24,7 @@ This document describes the target system architecture for **Resume Shapeshifter
 
 **Actors:** Job seeker (primary); optional future roles (coach, org admin).
 
-**External systems:** **Groq** (LLM inference, structured JSON where the chosen model supports it), optional object storage for uploads, PDF/runtime for print-quality export.
+**External systems:** **Groq** (LLM inference, structured JSON where the chosen model supports it), optional object storage for uploads, PDF/runtime for print-quality export (operates in high-fidelity HTML-to-PDF mode under Docker/local with Chromium, or programmatic plain text PDF fallback mode under serverless/Vercel environments).
 
 ```mermaid
 C4Context
@@ -32,7 +32,7 @@ C4Context
   Person(user, "Job seeker", "Pastes resume and JD; reviews and exports")
   System(rs, "Resume Shapeshifter", "Parse, score, tailor, gap-analyze, export PDF")
   System_Ext(llm, "Groq API", "JD extraction, parsing, scoring, rewrite, gaps")
-  System_Ext(pdf, "PDF runtime", "Headless browser or PDF lib for export")
+  System_Ext(pdf, "PDF runtime", "Headless browser or programmatic fallback")
 
   Rel(user, rs, "Uses")
   Rel(rs, llm, "HTTPS / JSON")
@@ -177,7 +177,9 @@ flowchart LR
 1. **Tailored resume PDF** — clean, single-column, ATS-friendly layout for MVP.
 2. **Side-by-side comparison PDF** — proof document: original vs tailored, highlighted changes, scores before/after, JD summary, gap summary, **disclaimer**.
 
-**Implementation options:** Playwright/Puppeteer print-to-PDF from HTML templates, `@react-pdf/renderer`, or server-side LaTeX (higher cost). MVP favors **HTML → PDF** for speed of iteration.
+**Implementation options:** Puppeteer print-to-PDF from HTML templates.
+- **Docker / Local Execution (High-Fidelity):** Launches headless Chromium via Puppeteer to render rich HTML/CSS templates. Supported on local development environments and Docker container deployments (where Alpine-system Chromium dependencies are installed).
+- **Vercel / Serverless Execution (Plain Text Fallback):** Vercel serverless functions restrict deployment package sizes and do not support headless browser binaries. If no system browser is found, the application falls back gracefully to a programmatic plain text PDF generator (`generateValidMockPdf`) which constructs PDF 1.4 objects directly from formatted text lines. This avoids timeouts, crashes, and dependency bloating.
 
 ---
 
@@ -295,13 +297,30 @@ flowchart TD
 
 ## 9. PDF Pipeline
 
+The PDF generator operates on a dual-path pipeline depending on whether a system browser (Chromium/Edge/Chrome) is available at runtime:
+
 ```mermaid
-flowchart LR
-  T[TailoringRun + templates] --> H[HTML render server-side]
-  H --> P[Print to PDF]
-  P --> O1[Tailored resume PDF]
-  P --> O2[Comparison PDF]
+flowchart TD
+    Run[TailoringRun Data] --> InEnv{Browser Detected?}
+    
+    %% Docker / Local Path
+    InEnv -->|Yes: Docker / Local| PathRich[High-Fidelity HTML Path]
+    PathRich --> Tpl[Render HTML/CSS Templates]
+    Tpl --> Puppeteer[Launch Headless Chromium]
+    Puppeteer --> PDFRich[Print to High-Fidelity PDF]
+    
+    %% Vercel / Serverless Path
+    InEnv -->|No: Vercel / Serverless| PathPlain[Plain Text Fallback Path]
+    PathPlain --> TextLines[Build Plain Text Lines]
+    TextLines --> Programmatic[Programmatic PDF 1.4 Stream Writer]
+    Programmatic --> PDFPlain[Generate Plain Text PDF Buffer]
+    
+    PDFRich --> Out[Binary PDF Output]
+    PDFPlain --> Out
 ```
+
+- **High-Fidelity HTML Path (Docker/Local):** Renders premium CSS layouts with custom margins and typography.
+- **Plain Text Fallback Path (Vercel/Serverless):** Formats sections, bullets, and score tables into text layouts and writes them byte-for-byte to a standard PDF 1.4 stream, guaranteeing delivery on browser-less deployments.
 
 **Comparison PDF content (required):** Header (title, company), original vs tailored scores, JD requirements summary, two columns (original / tailored bullets), visual emphasis on changed bullets, gap analysis, disclaimer.
 
@@ -309,7 +328,7 @@ flowchart LR
 
 ## 10. Data Storage
 
-**MVP:** Session or local server storage (encrypted cookie + server cache, or SQLite file) is acceptable per product guidance.
+**MVP:** MySQL database using Drizzle ORM for schema management. Authentication is powered by JWT stored in HTTP-only cookies, with user profiles and password hashes securely stored in the `users` table.
 
 **Optional persistence entities** (relational or document):
 
@@ -324,6 +343,7 @@ flowchart LR
 ### 11.1 Security and Privacy
 
 - **Groq API key** (and any PDF-related secrets) only on the **server**; never expose to the browser.
+- **Authentication:** JWT tokens stored in HTTP-only cookies. Passwords hashed using bcryptjs. Protected routes enforced via Next.js Edge Middleware.
 - PII (resume content) encrypted at rest if persisted; minimal retention policy.
 - Rate limiting per IP / session on analyze and tailor endpoints.
 

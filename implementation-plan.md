@@ -207,8 +207,8 @@ _Phases 3 and 4 can be partially reordered:_ you may start HTML→PDF with **tex
    - **Comparison** — header (job title, company), scores before/after, JD summary, two-column bullets, visual diff for changed lines, gap summary, disclaimer.
 
 2. **PDF engine**
-   - Choose one: Playwright/Puppeteer print-to-PDF **or** `@react-pdf/renderer` (architecture.md §4.9).
-   - Server-only execution; tune margins/fonts for readability.
+   - Implement Puppeteer-core execution for high-fidelity HTML-to-PDF rendering (runs successfully under Docker or local platforms with a resolved Chrome/Chromium executable).
+   - Implement a serverless-friendly plain text PDF generator fallback (`generateValidMockPdf`) using programmatic PDF 1.4 stream rendering. When launched on browserless platforms like Vercel, it formats the sections/comparisons into text layout blocks and compiles them directly to PDF bytes, preventing OOM/crashing.
 
 3. **`POST /export/pdf`** (architecture.md §7)
    - Body: `tailoringRunId`, `kind: "tailored" | "comparison"`.
@@ -225,6 +225,7 @@ _Phases 3 and 4 can be partially reordered:_ you may start HTML→PDF with **tex
 
 - `context.md` §7.8 and architecture.md §15 Definition of Done: comparison PDF includes all required sections.
 - Tailored-only PDF suitable for submission draft (user still responsible for verification).
+- PDF generation handles serverless environment (e.g. Vercel) gracefully by yielding clean plain text formatted PDF binary fallbacks.
 
 ### Dependencies
 

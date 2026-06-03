@@ -88,13 +88,20 @@ Use this checklist while coding so behavior stays predictable under bad inputs, 
 | **JSON fences / prose**                  | `src/lib/json-extract.ts` + repair retry in `completeJson`.                                                                |
 | **String scores from model**             | `preprocessMatchScore` before Zod.                                                                                         |
 | **Empty `riskFlag`**                     | Stripped in `preprocessTailoredResume`.                                                                                    |
-| **`response_format` unsupported**        | If Groq rejects `json_object`, remove flag in `llm.ts` and rely on extract + repair (see comment in code if you hit this). |
-| **Tailored match on wrong object**       | `assembleResumeForScoring` + unit test in `tests/resume-assembly.test.ts`.                                                 |
-| **Groq 429 / 401**                       | Mapped to **429** / **401** with `code` in JSON body.                                                                      |
+| **Tailored match on wrong object**   | `assembleResumeForScoring` + unit test in `tests/resume-assembly.test.ts`.                                                 |
+| **Groq 429 / 401**                   | Mapped to **429** / **401** with `code` in JSON body.                                                                      |
 
 ---
 
-## Phase 3 — Document ingestion (PDF / DOCX)
+## 1. Authentication Edge Cases
+
+| Area | Edge Case | Mitigation / Strategy |
+| :--- | :--- | :--- |
+| Login / Signup | Duplicate email signups | Check DB for existing email and return 409 Conflict. |
+| Session Expiry | JWT token expires | Middleware catches expired token, clears cookie, redirects to login. |
+| Missing Token | Accessing protected route without token | Edge middleware redirects to login page. |
+
+## 2. Ingestion & Document Parsingestion (PDF / DOCX)
 
 | Edge case                           | What can go wrong                                        | What to do                                                                           |
 | ----------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------ |
@@ -141,18 +148,20 @@ Use this checklist while coding so behavior stays predictable under bad inputs, 
 | **Page breaks**                   | Bullet split across pages awkwardly.                      | `break-inside: avoid` on bullet blocks where supported.                            |
 | **Idempotency key ignored**       | Double-click generates two heavy PDF jobs.                | Honor `Idempotency-Key`: return same PDF or dedupe in-flight (architecture.md §7). |
 | **Wrong `kind`**                  | `kind: "compare"` typo.                                   | **400** unknown export kind.                                                       |
+| **Vercel / Serverless hosting**   | Headless Chrome binary not available, crashing Puppeteer.  | Detect lack of binary path; execute programmatic plain text PDF generator fallback (`generateValidMockPdf`) to build compliant PDF 1.4 streams directly. |
+| **Docker / Linux hosting**        | Headless Chromium fails to launch due to missing OS libs. | Ensure Docker image pre-installs required Alpine system dependencies (`nss`, `freetype`, etc.) and sets correct `PUPPETEER_EXECUTABLE_PATH`. |
 
 ### Phase 4 — implemented mitigations (this repo)
 
 | Edge case                                     | Mitigation in code                                                                                                                                                                                                                                                                                                                         |
 | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Headless browser timeout & missing binary** | `getSystemBrowserPath()` resolves existing system Chrome or Edge installations. If missing or running in test environments (`process.env.NODE_ENV === "test"`), `generatePdf` automatically falls back to a clean mock PDF buffer, protecting unit tests and server stability. Launch options include sandbox disabling and GPU disabling. |
+| **Headless browser timeout & missing binary** | `getSystemBrowserPath()` resolves existing system Chrome/Edge installations or Chromium binary (inside Docker). If missing (e.g. running in serverless environments like Vercel) or running in test environments (`process.env.NODE_ENV === "test"`), `generatePdf` automatically falls back to a clean programmatic plain text PDF generator (`generateValidMockPdf`), programmatically writing compliant PDF 1.4 objects directly from structured text data, protecting unit tests and serverless stability. Launch options include sandbox disabling and GPU disabling. |
 | **Memory & page breaks**                      | Styled templates use strict CSS rules: `font-family: serif` (Times New Roman stack for resumes) or system sans-serif (comparison reports) to prevent rendering tofu. Print media margin configurations (`15mm` margins) and structured lists ensure zero awkward page breaks.                                                              |
 | **HTML injection**                            | Dynamic text variables (e.g. `bullet.original`, `bullet.tailored`, `run.resumeProfile.contact`) are safely rendered in HTML templates via Next.js dynamic routing, sanitizing, or basic textual escaping before insertion, preventing cross-site scripting (XSS).                                                                          |
 | **Missing `TailoringRun` fields**             | `POST /api/export/pdf` checks if `runRecord` exists (returns **404** `RUN_NOT_FOUND`) and if the tailored resume fields are generated (returns **400** `TAILORING_NOT_GENERATED`), preventing crashes.                                                                                                                                     |
 | **Comparison width**                          | The comparison PDF templates utilize a rigid `table-layout: fixed` style with explicit percentage widths (`65%` for bullet diff list, `35%` for gaps audit) ensuring the dual-column structure preserves premium readability at exactly A4 proportions.                                                                                    |
 | **Idempotency keys**                          | Integrated `Idempotency-Key` headers in `POST /api/export/pdf`. When a browser client retries or double-clicks, the API retrieves the already-rendered PDF buffer from a global `Map` cache and returns it instantly with `X-Cache: HIT`, completely avoiding double rendering and concurrency spikes.                                     |
-| **Wrong `kind` payload**                      | Enforces payload validation at route start. If `kind` is not `"tailored"` or `"comparison"`, returns **400** `INVALID_KIND`. If `tailoringRunId` is missing, returns **400** `INVALID_RUN_ID`.                                                                                                                                             |
+| **Wrong `kind` payload**                      | Enforces payload validation at route start. If `kind` is not `"tailored"` or `"comparison"`, returns **400** `INVALID_KIND`. If `tailoringRunId` is missing, returns **400** `INVALID_RUN_ID`. |
 
 ---
 
