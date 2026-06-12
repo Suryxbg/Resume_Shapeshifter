@@ -60,6 +60,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/drizzle ./drizzle
 COPY --from=builder --chown=nextjs:nodejs /app/src/lib/db/migrate.ts ./src/lib/db/migrate.ts
 COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./
+COPY --from=builder --chown=nextjs:nodejs /app/start.sh ./start.sh
+RUN chmod +x ./start.sh
 
 # Install tsx and dotenv in the runner stage so the release command can run them
 RUN npm install tsx dotenv
@@ -68,4 +70,4 @@ USER nextjs
 
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+CMD ["./start.sh"]
