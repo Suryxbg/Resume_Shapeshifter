@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { verifyToken } from "@/lib/auth/jwt";
 import { AuthButtons } from "@/components/auth/AuthButtons";
 
 export async function SiteHeader() {
@@ -19,8 +18,8 @@ export async function SiteHeader() {
       if (payload) {
         user = { email: payload.email as string, userId: payload.userId as string };
       }
-    } catch (e: any) {
-      debugError = e.message || String(e);
+    } catch (e: unknown) {
+      debugError = e instanceof Error ? e.message : String(e);
       // Force user to be truthy so we can see the error in the UI
       user = { email: "ERROR: " + debugError, userId: "error" };
     }
