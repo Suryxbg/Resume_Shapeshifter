@@ -11,17 +11,36 @@ export default async function ResumesPage() {
     redirect("/login?returnTo=/resumes");
   }
 
-  const rows = await db
-    .select({
-      id: resumeHistory.id,
-      jobTitle: resumeHistory.jobTitle,
-      companyName: resumeHistory.companyName,
-      atsScore: resumeHistory.atsScore,
-      createdAt: resumeHistory.createdAt,
-    })
-    .from(resumeHistory)
-    .where(eq(resumeHistory.userId, user.id))
-    .orderBy(desc(resumeHistory.createdAt));
+  let rows: any[] = [];
+  let dbError = "";
+
+  try {
+    rows = await db
+      .select({
+        id: resumeHistory.id,
+        jobTitle: resumeHistory.jobTitle,
+        companyName: resumeHistory.companyName,
+        atsScore: resumeHistory.atsScore,
+        createdAt: resumeHistory.createdAt,
+      })
+      .from(resumeHistory)
+      .where(eq(resumeHistory.userId, user.id))
+      .orderBy(desc(resumeHistory.createdAt));
+  } catch (error: any) {
+    console.error("DB Query failed:", error);
+    dbError = error.message || String(error);
+  }
+
+  if (dbError) {
+    return (
+      <main className="mx-auto max-w-4xl px-6 py-10">
+        <div className="rounded-xl border border-red-200 bg-red-50 p-6">
+          <h1 className="text-lg font-semibold text-red-800">Database Error</h1>
+          <p className="mt-2 font-mono text-sm text-red-600">{dbError}</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-10">
