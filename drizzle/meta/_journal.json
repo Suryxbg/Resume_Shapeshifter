@@ -8,6 +8,13 @@
       "when": 1780511060775,
       "tag": "0000_sweet_doctor_strange",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1780511060776,
+      "tag": "0001_resume_history",
+      "breakpoints": true
     }
   ]
 }
