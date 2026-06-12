@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractJsonObject, parseJsonObject } from "@/lib/json-extract";
+import { extractJsonObject, parseJsonObject } from "@/lib/llm/json-extract";
 
 describe("json-extract", () => {
   it("parses fenced JSON", () => {

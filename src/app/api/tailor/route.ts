@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { TailorRequestSchema, TailorResponseSchema } from "@/lib/api-types";
-import { formatZodError } from "@/lib/api-errors";
+import { TailorRequestSchema, TailorResponseSchema } from "@/lib/api/types";
+import { formatZodError } from "@/lib/api/errors";
 import { runTailorPipeline, mapTailorError } from "@/lib/pipeline/tailor";
 
-import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
+import { getClientIp, checkRateLimit } from "@/lib/utils/rate-limit";
 
 /**
  * POST /api/tailor — Groq bullet rewrite + tailored match + gaps (mock fallback without API key).

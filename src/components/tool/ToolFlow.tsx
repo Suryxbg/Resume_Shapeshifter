@@ -1,15 +1,24 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import type { AnalyzeResponse, TailorResponse } from "@/lib/api-types";
-import { GapAnalysis } from "@/components/GapAnalysis";
-import { JDInput } from "@/components/JDInput";
-import { PDFExportButton } from "@/components/PDFExportButton";
-import { ResumeInput } from "@/components/ResumeInput";
-import { ResumeUpload } from "@/components/ResumeUpload";
-import { ScoreCard } from "@/components/ScoreCard";
-import { SideBySideDiff } from "@/components/SideBySideDiff";
-import { SAMPLE_RESUME, SAMPLE_JD } from "@/lib/sample-data";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { AnalyzeResponse, TailorResponse } from "@/lib/api/types";
+import { GapAnalysis } from "@/components/tool/GapAnalysis";
+import { JDInput } from "@/components/tool/JDInput";
+import { PDFExportButton } from "@/components/tool/PDFExportButton";
+import { ResumeInput } from "@/components/tool/ResumeInput";
+import { ResumeUpload } from "@/components/tool/ResumeUpload";
+import { SaveResumeBanner } from "@/components/tool/SaveResumeBanner";
+import { ScoreCard } from "@/components/tool/ScoreCard";
+import { SideBySideDiff } from "@/components/tool/SideBySideDiff";
+import {
+  clearPendingResume,
+  clearToolFlowState,
+  getPendingResume,
+  getToolFlowState,
+  savePendingResume,
+  saveToolFlowState,
+} from "@/lib/resume/pending";
+import { SAMPLE_RESUME, SAMPLE_JD } from "@/lib/data/sample-data";
 
 type Step = "input" | "analysis" | "tailor" | "export";
 
@@ -27,7 +36,11 @@ async function readApiError(res: Response): Promise<string> {
   }
 }
 
-export function ToolFlow() {
+type ToolFlowProps = {
+  initialUser?: { id: string; email: string } | null;
+};
+
+export function ToolFlow({ initialUser = null }: ToolFlowProps) {
   const [step, setStep] = useState<Step>("input");
   const [resumeText, setResumeText] = useState("");
   const [jdText, setJdText] = useState("");
@@ -39,6 +52,15 @@ export function ToolFlow() {
   const [inferenceNotice, setInferenceNotice] = useState<string | null>(null);
   const [uploadNotice, setUploadNotice] = useState<string | null>(null);
   const [reviewedAndVerified, setReviewedAndVerified] = useState(false);
+  const [user, setUser] = useState(initialUser);
+  const [savedResumeId, setSavedResumeId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccessMessage, setSaveSuccessMessage] = useState<string | null>(
+    null
+  );
+  const pendingSaveAttempted = useRef(false);
+  const stateRestored = useRef(false);
 
   const loadSampleData = useCallback(() => {
     setResumeText(SAMPLE_RESUME);
@@ -58,7 +80,148 @@ export function ToolFlow() {
     setUploadNotice(null);
     setLoading(false);
     setReviewedAndVerified(false);
+    setSavedResumeId(null);
+    setSaveError(null);
+    setSaveSuccessMessage(null);
+    clearPendingResume();
+    clearToolFlowState();
+    pendingSaveAttempted.current = false;
   }, []);
+
+  const saveResume = useCallback(async () => {
+    if (!tailoringRunId || !analyze || !tailor || !user) return;
+
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      const res = await fetch("/api/resumes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tailoringRunId,
+          resumeText,
+          jdText,
+          analyze,
+          tailor,
+        }),
+      });
+      const data = (await res.json()) as { error?: string; id?: string };
+      if (!res.ok) {
+        setSaveError(data.error || "Failed to save resume");
+        return;
+      }
+      setSavedResumeId(data.id ?? "saved");
+      setSaveSuccessMessage("Resume saved to your account.");
+      clearPendingResume();
+      clearToolFlowState();
+    } catch {
+      setSaveError("Network error — could not save resume.");
+    } finally {
+      setIsSaving(false);
+    }
+  }, [tailoringRunId, analyze, tailor, user, resumeText, jdText]);
+
+  const persistForAuth = useCallback(() => {
+    if (!tailoringRunId || !analyze || !tailor) return;
+    savePendingResume({
+      tailoringRunId,
+      resumeText,
+      jdText,
+      analyze,
+      tailor,
+    });
+    saveToolFlowState({
+      step,
+      resumeText,
+      jdText,
+      tailoringRunId,
+      analyze,
+      tailor,
+      reviewedAndVerified,
+    });
+  }, [
+    tailoringRunId,
+    analyze,
+    tailor,
+    resumeText,
+    jdText,
+    step,
+    reviewedAndVerified,
+  ]);
+
+  useEffect(() => {
+    if (stateRestored.current) return;
+    stateRestored.current = true;
+
+    const restored = getToolFlowState();
+    if (restored) {
+      setStep(restored.step);
+      setResumeText(restored.resumeText);
+      setJdText(restored.jdText);
+      setTailoringRunId(restored.tailoringRunId);
+      setAnalyze(restored.analyze);
+      setTailor(restored.tailor);
+      setReviewedAndVerified(restored.reviewedAndVerified);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!initialUser) return;
+    setUser(initialUser);
+  }, [initialUser]);
+
+  useEffect(() => {
+    if (!user || pendingSaveAttempted.current) return;
+
+    const pending = getPendingResume();
+    if (!pending) return;
+
+    pendingSaveAttempted.current = true;
+
+    const autoSave = async () => {
+      setIsSaving(true);
+      setSaveError(null);
+      try {
+        const res = await fetch("/api/resumes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tailoringRunId: pending.tailoringRunId,
+            resumeText: pending.resumeText,
+            jdText: pending.jdText,
+            analyze: pending.analyze,
+            tailor: pending.tailor,
+          }),
+        });
+        const data = (await res.json()) as { error?: string; id?: string };
+        if (!res.ok) {
+          setSaveError(data.error || "Failed to save resume after sign-in");
+          pendingSaveAttempted.current = false;
+          return;
+        }
+
+        setTailoringRunId(pending.tailoringRunId);
+        setResumeText(pending.resumeText);
+        setJdText(pending.jdText);
+        setAnalyze(pending.analyze);
+        setTailor(pending.tailor);
+        setStep("export");
+        setSavedResumeId(data.id ?? "saved");
+        setSaveSuccessMessage(
+          "Welcome back! Your resume has been saved to your account."
+        );
+        clearPendingResume();
+        clearToolFlowState();
+      } catch {
+        setSaveError("Could not save resume after sign-in. Try again.");
+        pendingSaveAttempted.current = false;
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    void autoSave();
+  }, [user]);
 
   const runAnalyze = useCallback(async () => {
     setError(null);
@@ -367,8 +530,26 @@ export function ToolFlow() {
         </section>
       )}
 
+      {saveSuccessMessage ? (
+        <div
+          className="mb-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-950"
+          role="status"
+        >
+          {saveSuccessMessage}
+        </div>
+      ) : null}
+
       {step === "tailor" && analyze && tailor && (
         <section className="flex flex-col gap-8">
+          <SaveResumeBanner
+            isAuthenticated={!!user}
+            isSaved={!!savedResumeId}
+            isSaving={isSaving}
+            saveError={saveError}
+            onSave={saveResume}
+            onAuthRedirect={persistForAuth}
+          />
+
           <div className="grid gap-4 lg:grid-cols-2">
             <ScoreCard title="Original match" score={analyze.matchOriginal} />
             <ScoreCard title="Tailored match" score={tailor.matchTailored} />
@@ -422,6 +603,17 @@ export function ToolFlow() {
 
       {step === "export" && (
         <section className="flex flex-col gap-6">
+          {tailor && analyze ? (
+            <SaveResumeBanner
+              isAuthenticated={!!user}
+              isSaved={!!savedResumeId}
+              isSaving={isSaving}
+              saveError={saveError}
+              onSave={saveResume}
+              onAuthRedirect={persistForAuth}
+            />
+          ) : null}
+
           <div>
             <h2 className="text-lg font-semibold text-zinc-900">
               Download Resumes & Reports

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assembleResumeForScoring } from "@/lib/resume-assembly";
+import { assembleResumeForScoring } from "@/lib/resume/assembly";
 import resumeFixture from "./fixtures/resume-profile.json";
 import tailoredFixture from "./fixtures/tailored-resume.json";
 import type { ResumeProfile } from "@/schemas";

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { users } from "@/lib/schema";
-import { comparePasswords } from "@/lib/hash";
-import { signToken } from "@/lib/jwt";
+import { users } from "@/lib/db/schema";
+import { comparePasswords } from "@/lib/auth/hash";
+import { signToken } from "@/lib/auth/jwt";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 

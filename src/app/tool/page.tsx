@@ -1,5 +1,7 @@
-import { ToolFlow } from "@/components/ToolFlow";
+import { ToolFlow } from "@/components/tool/ToolFlow";
+import { getSessionUser } from "@/lib/auth";
 
-export default function ToolPage() {
-  return <ToolFlow />;
+export default async function ToolPage() {
+  const user = await getSessionUser();
+  return <ToolFlow initialUser={user} />;
 }

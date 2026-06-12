@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { AnalyzeRequestSchema, AnalyzeResponseSchema } from "@/lib/api-types";
-import { formatZodError } from "@/lib/api-errors";
+import { AnalyzeRequestSchema, AnalyzeResponseSchema } from "@/lib/api/types";
+import { formatZodError } from "@/lib/api/errors";
 import { runAnalyzePipeline } from "@/lib/pipeline/analyze";
 import { mapPipelineError } from "@/lib/pipeline/errors";
 
-import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
+import { getClientIp, checkRateLimit } from "@/lib/utils/rate-limit";
 
 /**
  * POST /api/analyze — JD + resume analysis via Groq, or mock fallback when GROQ_API_KEY is unset.

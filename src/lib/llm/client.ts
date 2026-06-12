@@ -1,6 +1,6 @@
 import type { z } from "zod";
-import { parseJsonObject } from "@/lib/json-extract";
-import { getGroqApiKey, getGroqModel, groqBaseUrl } from "@/lib/llm-config";
+import { parseJsonObject } from "@/lib/llm/json-extract";
+import { getGroqApiKey, getGroqModel, groqBaseUrl } from "@/lib/llm/config";
 import { buildJsonRepairMessages } from "@/prompts/json-repair";
 
 export class LlmError extends Error {

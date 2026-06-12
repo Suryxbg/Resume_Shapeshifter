@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { checkRateLimit } from "@/lib/rate-limit";
-import { checkTailoringConsistency } from "@/lib/consistency";
+import { checkRateLimit } from "@/lib/utils/rate-limit";
+import { checkTailoringConsistency } from "@/lib/resume/consistency";
 import { ResumeProfile } from "@/schemas/resume";
 import { TailoredResume } from "@/schemas/tailored";
 

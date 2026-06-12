@@ -10,14 +10,16 @@ const getSecretKey = () => {
 
 export async function middleware(request: NextRequest) {
   // Define protected routes (currently none exist, but preparing for future)
-  const protectedPaths = ["/dashboard", "/history", "/profile"];
+  const protectedPaths = ["/resumes", "/profile"];
   const isProtectedPath = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path));
 
   if (isProtectedPath) {
     const token = request.cookies.get("auth_token")?.value;
 
     if (!token) {
-      return NextResponse.redirect(new URL("/login", request.url));
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("returnTo", request.nextUrl.pathname);
+      return NextResponse.redirect(loginUrl);
     }
 
     try {
@@ -37,7 +39,9 @@ export async function middleware(request: NextRequest) {
     if (token) {
       try {
         await jwtVerify(token, getSecretKey());
-        return NextResponse.redirect(new URL("/", request.url));
+        const returnTo = request.nextUrl.searchParams.get("returnTo");
+        const destination = returnTo?.startsWith("/") ? returnTo : "/";
+        return NextResponse.redirect(new URL(destination, request.url));
       } catch {
         // Invalid token, allow access to login/signup
       }

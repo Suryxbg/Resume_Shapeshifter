@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { resolveInferenceMode } from "@/lib/llm-config";
+import { resolveInferenceMode } from "@/lib/llm/config";
 
 describe("resolveInferenceMode", () => {
   afterEach(() => {

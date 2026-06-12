@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { formatZodError } from "@/lib/api-errors";
-import { createRun } from "@/lib/run-store";
+import { formatZodError } from "@/lib/api/errors";
+import { createRun } from "@/lib/stores/run-store";
 
 const CreateRunBodySchema = z.object({
   resumeText: z.string().trim().min(1, "resumeText cannot be empty"),

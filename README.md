@@ -1,254 +1,461 @@
-# 🧬 Resume Shapeshifter
+# Resume Shapeshifter
 
-An intelligent, high-performance, and end‑to‑end AI‑powered resume tailoring engine. It empowers candidates to upload their resumes (PDF/DOCX), parse and match them against target job descriptions in real-time, perform precise skills gap analyses, dynamically rewrite experience bullets to emphasize relevant competencies, and export clean, ATS-compliant resumes alongside comprehensive comparative audit reports.
+An AI-powered resume tailoring engine that helps job seekers align their resume with a target job description — truthfully. Upload or paste a resume, analyze match scores and skill gaps, generate tailored bullet rewrites, and export ATS-friendly PDFs with side-by-side comparison reports.
 
-Built with a highly optimized, dual-pass serverless AI pipeline, server-side Puppeteer PDF rendering, and enterprise-grade consistency guardrails.
+Built with **Next.js 15**, **Groq LLM**, **MySQL + Drizzle ORM**, **JWT authentication**, server-side PDF rendering, and enterprise-style guardrails.
 
----
-
-## 🌟 Key Features
-
-- **📂 Intelligent Multi-Format Ingestion:**
-  - Accepts `.pdf` and `.docx` files up to **5MB**.
-  - **Magic-Byte Verification:** Server-side inspection of headers (`%PDF` and `PK\x03\x04` ZIP signatures) to prevent renamed extension attacks or file spoofing.
-  - **Clean Normalization:** Automatically filters smart typography, normalizes white spaces, and stabilizes text layouts for high-fidelity extraction.
-- **🔒 Secure Authentication & Data Persistence:**
-  - Robust user authentication powered by **JWT (JSON Web Tokens)** stored in HTTP-only cookies and **bcryptjs** password hashing.
-  - Edge-compatible Next.js Middleware route protection ensuring uncompromising security.
-  - Relational data persistence backed by **MySQL** and managed elegantly through **Drizzle ORM**.
-- **🧠 Atomic 2-Pass LLM Pipeline (Groq-Optimized):**
-  - Consolidates a legacy 7-call sequential LLM flow into a highly concurrent **2-call atomic flow**.
-  - Leverages `llama-3.1-8b-instant` (or other Groq models) using raw native `fetch` over HTTP with zero external heavy package bloat.
-  - Guarantees structured data integrity via strict **Zod Schema Validation** and an intelligent **JSON Repair Prompting Engine** to capture and resolve parsing errors automatically.
-- **⚡ 77% Token Footprint Reduction:**
-  - Structural consolidation eliminates duplicate text transfers, collapsing token payloads from **~4,400 to ~1,000 tokens** per run.
-  - Programmatic under-the-hood truncation caps inputs to **3,500 characters** in `text-limits.ts` to preserve context budget without degrading UX.
-- **📊 Double Server-Side PDF Rendering:**
-  - Renders PDFs on the server using headless `puppeteer-core`, binding directly to the host's existing Chrome/Edge installation to bypass massive browser binary bloats.
-  - **ATS-Tailored Resume:** Single-column, highly-parseable serif CV styled specifically to pass automated applicant tracking systems.
-  - **Insights & Comparison PDF:** Premium dual-column comparative audit highlighting Match Score gains, JD requirements, gap priorities, and side-by-side bullet comparisons complete with AI confidence scores.
-  - **Idempotency-Key Caching:** Fast memory caching of generated PDF buffers to block redundant Chrome instance launches on repeated downloads.
-- **🛡️ Verification Gates & Anti-Hallucination Guardrails:**
-  - **Fuzzy Consistency Audits:** Advanced post-LLM validation comparing tailored outputs against original profiles to detect and intercept fabricated job details or model hallucinations.
-  - **Review Gate:** A frontend UX barrier locking downloads until the candidate actively reviews lower-confidence rewrites.
-  - **IP-Based Rate Limiting:** Built-in in-memory throttle limiting clients to 10 requests per minute with native `429 Too Many Requests` responses and detailed `Retry-After` headers.
-- **🎯 One-Click "Keyless" Demo Sandbox:**
-  - Complete sandbox mock system. If no `GROQ_API_KEY` is present, the app gracefully falls back to structured local mock fixtures.
-  - One-click **"Load sample data"** buttons instantly populate realistic engineering profiles to test out the visual side-by-side interface in seconds.
+**Live repo:** [github.com/Suryxbg/Resume_Shapeshifter](https://github.com/Suryxbg/Resume_Shapeshifter)
 
 ---
 
-## 📂 Project Architecture
+## Key Features
 
-The codebase is organized with strict separation between API routes, core pipeline engines, validation schemas, and reusable visual UI components:
+### Guest Mode (no login required)
 
-```text
-├── src/
-│   ├── app/
-│   │   ├── api/                   # Serverless Endpoint Handlers
-│   │   │   ├── analyze/           # Trigger combined resume & JD parsing/matching
-│   │   │   ├── export/            # Puppeteer ATS & Comparison PDF streamer
-│   │   │   ├── ingest/            # Safe magic-byte PDF/DOCX extractor
-│   │   │   ├── runs/              # In-memory session telemetry endpoints
-│   │   │   ├── tailor/            # Trigger consolidated bullet-rewriting
-│   │   │   └── validate/          # Core schema check triggers
-│   │   ├── globals.css            # Tailored styles & glassmorphism variables
-│   │   ├── layout.tsx             # Shared root HTML viewport & font mappings
-│   │   ├── page.tsx               # High-impact product landing page
-│   │   └── tool/                  # Core engine app workspace routing
-│   │       └── page.tsx           # Assembles ToolFlow orchestrator
-│   ├── components/                # Modular client UX components
-│   │   ├── GapAnalysis.tsx        # Priority badges & recommendation lists
-│   │   ├── JDInput.tsx            # Rich job description textarea
-│   │   ├── PDFExportButton.tsx    # Idempotence-safe Puppeteer download buttons
-│   │   ├── ResumeInput.tsx        # Editable resume raw text viewer
-│   │   ├── ResumeUpload.tsx       # Drag-and-drop ingestion panel with validation
-│   │   ├── ScoreCard.tsx          # Heuristic radial dial & difference scores
-│   │   ├── SideBySideDiff.tsx     # Custom color-coded before/after bullet diffs
-│   │   └── ToolFlow.tsx           # Central workspace orchestrator state machine
-│   ├── lib/                       # Under-the-Hood Logical Modules
-│   │   ├── pipeline/              # LLM Pipeline Executors
-│   │   │   ├── analyze.ts         # Parsers, scorings & initial gap orchestrator
-│   │   │   ├── errors.ts          # Resilient Groq HTTP error mappings
-│   │   │   └── tailor.ts          # Bullet rewrites & post-scoring orchestrator
-│   │   ├── consistency.ts         # Post-LLM fuzzy consistency validation engine
-│   │   ├── ingest.ts              # File sniffers & text normalizer
-│   │   ├── json-extract.ts        # String Zod-coercers & Zod-safe decoders
-│   │   ├── llm-config.ts          # Local/global environment token managers
-│   │   ├── llm-preprocess.ts      # LLM response normalizers
-│   │   ├── llm.ts                 # HTTP Groq requester, retriers & json repair
-│   │   ├── pdf.ts                 # Headless Puppeteer browser PDF templates
-│   │   ├── pipeline-logger.ts     # Diagnostic runtime console telemetrist
-│   │   ├── rate-limit.ts          # IP-based sliding token rate throttle
-│   │   ├── resume-assembly.ts     # Integrates new bullet changes safely into profiles
-│   │   ├── run-store.ts           # In-memory state database
-│   │   └── sample-data.ts         # Golden one-click demo dataset
-│   ├── schemas/                   # Shared Canonical Zod Data Schemes
-│   │   └── index.ts               # Core types for Profiles, Gaps, Matches & Audits
-│   └── types/                     # TypeScript structural interfaces
-├── tests/                         # Full Vitest Integration & Unit Suite
-│   ├── guardrails.test.ts         # IP-throttle & fabrication verification tests
-│   ├── ingest.test.ts             # Magic-bytes & normalization validator tests
-│   ├── json-extract.test.ts       # LLM JSON repair resilience tests
-│   └── resume-assembly.test.ts    # Bullet-swapping integration tests
-├── .env.example                   # Client-side configuration template
-├── apitoken.md                    # Detailed optimization statistics ledger
-├── progress.md                    # Core implementation phase checklist
-├── tsconfig.json                  # Strict type-checking rules
-└── tailwind.config.ts             # Sleek dark mode visual designs
+Use the full tailoring workflow without creating an account:
+
+- Upload resumes (PDF / DOCX) or paste text
+- Paste job descriptions and run analysis
+- Generate tailored resumes with side-by-side diff review
+- Download tailored and comparison PDFs
+
+Authentication is only required when you want to **save resumes permanently** and access them later.
+
+### Save to Account + Resume History
+
+- **Guest users** see a prominent call-to-action on the results page: *"Save your tailored resumes and access them anytime."*
+- Clicking **Sign Up** or **Login** preserves generated content in `sessionStorage` during auth — nothing is lost
+- After successful authentication, the resume is **auto-saved** and the user returns to the results page with a success message
+- **Authenticated users** can manually save resumes, browse **My Resumes**, view past tailoring sessions, and re-download PDFs
+
+### Intelligent Document Ingestion
+
+- Accepts `.pdf` and `.docx` files up to **5MB**
+- **Magic-byte verification** (`%PDF`, `PK\x03\x04`) prevents renamed-extension attacks
+- Normalizes smart quotes, dashes, and whitespace for stable LLM parsing
+- Extracted text is shown in an editable textarea before analysis
+
+### 2-Pass Atomic LLM Pipeline (Groq)
+
+- Consolidated from a legacy 7-call flow into **2 atomic Groq calls** (analyze + tailor)
+- Native `fetch` to Groq API — no heavy OpenAI SDK dependency
+- Strict **Zod schema validation** with JSON repair retries on malformed LLM output
+- **~77% token reduction** (~4,400 → ~1,000 tokens per full run)
+- Input capped at **3,500 characters** per field to preserve context budget
+- **Mock fallback** when `GROQ_API_KEY` is unset — full UI demo without an API key
+
+### Server-Side PDF Export
+
+- **ATS-Tailored Resume PDF** — single-column, serif typography optimized for parsing
+- **Insights & Comparison PDF** — dual-column audit with score gains, JD summary, bullet diffs, gap analysis, disclaimer
+- Renders via `puppeteer-core` using the host's Chrome/Edge when available
+- **Serverless fallback** on Vercel (no Chromium) — programmatic plain-text PDF 1.4 generator
+- **Idempotency-Key caching** prevents duplicate heavy PDF renders on double-click
+
+### Security, Auth & Persistence
+
+- **JWT** stored in HTTP-only cookies (`jose` library)
+- **bcryptjs** password hashing
+- **Next.js Edge Middleware** protects `/resumes` and `/profile`
+- **MySQL** relational storage via **Drizzle ORM**
+- `resume_history` table linked to users (1:many)
+
+### Guardrails & Rate Limiting
+
+- Post-LLM **fuzzy consistency audits** detect fabricated employers or hallucinated bullets
+- **Mandatory review gate** locks PDF downloads until the user confirms accuracy
+- **IP-based rate limiting** — 10 requests/minute on analyze, tailor, and export endpoints
+
+### One-Click Demo
+
+- **"Load sample data"** injects a realistic software engineer resume + job description
+- Works without a Groq API key using golden mock fixtures
+
+---
+
+## User Flows
+
+### Guest flow
+
+```
+Landing → Open Tool → Upload/Paste → Analyze → Tailor → Review → Export PDFs
+                                                              ↓
+                                    "Sign in to save" banner (Sign Up / Login)
+```
+
+### Save-after-auth flow
+
+```
+Guest generates resume → Clicks Sign Up or Login
+  → Resume data stored in sessionStorage
+  → Auth completes → Redirected back to /tool
+  → Resume auto-saved to account → Success message shown
+```
+
+### Authenticated flow
+
+```
+Login → Tool (or My Resumes) → Save resume → View history → Re-download PDFs
 ```
 
 ---
 
-## 🚀 Getting Started
+## Project Architecture
 
-### 1. Clone the Repository
+### High-level system diagram
+
+```mermaid
+flowchart LR
+  subgraph client [Browser]
+    UI[Landing / Tool / My Resumes]
+  end
+
+  subgraph nextjs [Next.js App]
+    API[API Routes]
+    MW[Edge Middleware]
+    Pipe[LLM Pipeline]
+    PDF[PDF Engine]
+  end
+
+  subgraph external [External]
+    Groq[Groq API]
+    MySQL[(MySQL)]
+  end
+
+  UI --> API
+  MW --> UI
+  API --> Pipe
+  API --> PDF
+  Pipe --> Groq
+  API --> MySQL
+```
+
+### Pipeline stages
+
+```mermaid
+flowchart TD
+  A[Upload or paste resume + JD] --> B[POST /api/analyze]
+  B --> C[Combined parse + score + gaps]
+  C --> D[POST /api/tailor]
+  D --> E[Combined rewrite + rescore + gaps]
+  E --> F[Side-by-side review]
+  F --> G[POST /api/export/pdf]
+  G --> H[Tailored PDF + Comparison PDF]
+  F --> I{Authenticated?}
+  I -->|Yes| J[POST /api/resumes]
+  I -->|No| K[Sign Up / Login → auto-save]
+  J --> L[My Resumes history]
+```
+
+### Directory structure
+
+```text
+resume_shapeshifter/
+├── src/
+│   ├── app/                          # Next.js App Router
+│   │   ├── (auth)/                   # Login & signup pages
+│   │   │   ├── login/
+│   │   │   └── signup/
+│   │   ├── api/                      # Server API routes
+│   │   │   ├── analyze/              # Combined JD + resume parse, score, gaps
+│   │   │   ├── tailor/               # Bullet rewrite + rescore
+│   │   │   ├── export/pdf/           # PDF generation (tailored | comparison)
+│   │   │   ├── ingest/               # PDF/DOCX text extraction
+│   │   │   ├── resumes/              # Save & list resume history (auth)
+│   │   │   ├── runs/                 # In-memory tailoring run store
+│   │   │   ├── validate/             # Zod schema validation endpoint
+│   │   │   └── auth/                 # login, signup, logout, me
+│   │   ├── tool/                     # Main tailoring workspace
+│   │   ├── resumes/                  # My Resumes list + detail pages
+│   │   ├── profile/                  # User profile page
+│   │   ├── layout.tsx
+│   │   └── page.tsx                  # Landing page
+│   ├── components/
+│   │   ├── auth/                     # LoginForm, SignupForm, AuthButtons
+│   │   ├── layout/                   # SiteHeader
+│   │   ├── tool/                     # ToolFlow, inputs, ScoreCard, PDF export, SaveResumeBanner
+│   │   └── resumes/                  # SavedResumeDetail
+│   ├── lib/
+│   │   ├── api/                      # Request/response Zod types, error helpers
+│   │   ├── auth/                     # Session helpers, JWT, bcrypt hashing
+│   │   ├── data/                     # Sample data + mock fixtures
+│   │   ├── db/                       # Drizzle client + MySQL schema
+│   │   ├── ingest/                   # File extraction + text limits
+│   │   ├── llm/                      # Groq client, config, JSON extract/repair
+│   │   ├── pdf/                      # HTML templates + PDF engine
+│   │   ├── pipeline/                 # analyze.ts, tailor.ts orchestrators
+│   │   ├── resume/                   # Assembly, consistency, pending-save (sessionStorage)
+│   │   ├── stores/                   # In-memory TailoringRun store
+│   │   └── utils/                    # Rate limiting, pipeline logging
+│   ├── prompts/                      # Groq prompt builders (analyze, tailor, repair)
+│   ├── schemas/                      # Canonical Zod schemas (ResumeProfile, MatchScore, etc.)
+│   ├── types/                        # TypeScript declarations
+│   └── middleware.ts                 # JWT route protection
+├── tests/                            # Vitest unit + contract tests (34 tests)
+├── drizzle/                          # SQL migrations (users, resume_history)
+├── docs/                             # Architecture, implementation plan, progress, edge cases
+├── scripts/                          # install-deps.ps1, utilities
+├── docker-compose.yml                # App + MySQL containers
+├── Dockerfile                        # Production container with Chromium
+├── .env.example
+└── README.md
+```
+
+### Database schema
+
+**`users`**
+
+| Column         | Type         | Notes                |
+| -------------- | ------------ | -------------------- |
+| id             | varchar(36)  | UUID primary key     |
+| name           | varchar(255) | Display name         |
+| email          | varchar(255) | Unique               |
+| password_hash  | varchar(255) | bcrypt               |
+| created_at     | timestamp    |                      |
+| updated_at     | timestamp    |                      |
+
+**`resume_history`** (users 1 → many)
+
+| Column                  | Type         | Notes                              |
+| ----------------------- | ------------ | ---------------------------------- |
+| id                      | varchar(36)  | UUID primary key                   |
+| user_id                 | varchar(36)  | FK → users.id                      |
+| job_title               | varchar(255) | From parsed JD                     |
+| company_name            | varchar(255) | Optional                           |
+| original_resume_text    | text         | Raw resume input                   |
+| job_description_text    | text         | Raw JD input                       |
+| generated_resume_text   | text         | Assembled tailored plain text      |
+| ats_score               | int          | Tailored match score (0–100)       |
+| tailoring_run_id        | varchar(36)  | Links to in-memory run for PDF     |
+| run_data                | text         | JSON blob for full pipeline replay |
+| created_at / updated_at | timestamp    |                                    |
+
+### API endpoints
+
+| Method | Endpoint              | Auth     | Description                                      |
+| ------ | --------------------- | -------- | ------------------------------------------------ |
+| POST   | `/api/analyze`        | No       | Parse resume + JD, score, gap analysis           |
+| POST   | `/api/tailor`         | No       | Rewrite bullets, rescore, refresh gaps           |
+| POST   | `/api/export/pdf`     | No       | Download tailored or comparison PDF              |
+| POST   | `/api/ingest`         | No       | Extract text from PDF/DOCX upload                |
+| POST   | `/api/resumes`        | Yes      | Save a tailored resume to account                |
+| GET    | `/api/resumes`        | Yes      | List user's saved resumes                        |
+| GET    | `/api/resumes/[id]`   | Yes      | Get saved resume detail (user-scoped)            |
+| POST   | `/api/auth/signup`    | No       | Create account + set JWT cookie                  |
+| POST   | `/api/auth/login`     | No       | Authenticate + set JWT cookie                    |
+| POST   | `/api/auth/logout`    | No       | Clear JWT cookie                                 |
+| GET    | `/api/auth/me`        | Yes      | Current user profile                             |
+| POST   | `/api/validate`       | No       | Validate JSON against Zod schemas                |
+| POST   | `/api/runs`           | No       | Create in-memory tailoring run                   |
+| GET    | `/api/runs/[id]`      | No       | Fetch tailoring run by ID                        |
+
+### Pages & navigation
+
+| Route            | Access        | Purpose                              |
+| ---------------- | ------------- | ------------------------------------ |
+| `/`              | Public        | Landing page                         |
+| `/tool`          | Public        | Full tailoring workflow              |
+| `/login`         | Public        | Sign in (`?returnTo=` supported)     |
+| `/signup`        | Public        | Create account                       |
+| `/resumes`       | Authenticated | Saved resume history list            |
+| `/resumes/[id]`  | Authenticated | Saved resume detail + PDF re-export  |
+| `/profile`       | Authenticated | Account info                         |
+
+**Navigation when authenticated:** My Resumes · Profile · Logout  
+**Navigation when guest:** Login · Sign Up
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 20+
+- MySQL 8 (local or Docker)
+- Optional: Groq API key for live LLM inference
+- Optional: Chrome or Edge installed locally for high-fidelity PDF rendering
+
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/Suryxbg/Resume_Shapeshifter.git
 cd Resume_Shapeshifter
 ```
 
-### 2. Install Dependencies
-
-If you have a global Node.js environment configured on your system:
+### 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-If `npm` is not globally recognized (common on legacy Windows environment configurations), execute our standalone installer which automatically resolves local paths:
+On Windows if `npm` is not on PATH:
 
 ```powershell
 .\scripts\install-deps.ps1
 ```
 
-### 3. Configure the Server-Side Environment
-
-Create a local config file (this is strictly excluded from version control to **keep your API keys hidden and safe**):
+### 3. Configure environment
 
 ```bash
 cp .env.example .env.local
 ```
 
-Open `.env.local` and add your Groq key:
-
 ```ini
 GROQ_API_KEY=gsk_your_actual_key_here
-GROQ_MODEL=llama-3.1-8b-instant
+GROQ_MODEL=llama-3.3-70b-versatile
 DATABASE_URL="mysql://root:root@localhost:3306/resume_shapeshifter"
 JWT_SECRET="your-super-secret-jwt-key"
 ```
 
-> [!IMPORTANT]
-> **API Key Safety:** The `GROQ_API_KEY` is exclusively consumed inside Next.js serverless functions (`src/lib/llm.ts`). It is **never** sent to the client browser, preserving complete security of your credentials.
+> **API key safety:** `GROQ_API_KEY` is only used in server-side code (`src/lib/llm/`). It is never exposed to the browser.
 >
-> **No Key? No Problem!** If `GROQ_API_KEY` is left blank, the system automatically falls back to **Mock mode**, showing an amber inference notice on the tool but allowing you to execute every single stage of the flow using built-in golden mock fixtures.
+> **No key?** Leave `GROQ_API_KEY` blank — the app runs in **mock mode** with golden fixtures and an amber notice in the UI.
 
-### 4. Fire Up the Development Server
+### 4. Set up the database
+
+Start MySQL (or use Docker Compose — see below), then apply migrations:
+
+```bash
+mysql -u root -p resume_shapeshifter < drizzle/0000_sweet_doctor_strange.sql
+mysql -u root -p resume_shapeshifter < drizzle/0001_resume_history.sql
+```
+
+### 5. Run the development server
 
 ```bash
 npm run dev
 ```
 
-Open your browser and navigate to **[http://localhost:3000](http://localhost:3000)**.
+Open **[http://localhost:3000](http://localhost:3000)**.
 
 ---
 
-## 🎯 Experiencing the One-Click Demo
+## Docker Deployment
 
-To quickly inspect the high-fidelity features without typing manual resumes:
-
-1. Navigate to the tool workspace: [http://localhost:3000/tool](http://localhost:3000/tool).
-2. Click **"Load sample data"** to instantly inject a pre-formatted, highly detailed Software Engineer resume and matching job description.
-3. Select **"Analyze"** to execute Phase 1: watch the parsing animations, view the heuristic Match Score (e.g., 68%), and read the prioritized Skills Gaps.
-4. Click **"Generate tailored resume"**: this rewrites experience bullets in real-time, recalculates a fresh tailored score (e.g., 91%), and provides audit reports.
-5. Review the **Mandatory Verification Gate**: examine the color-coded side-by-side bullet diffs, read the AI rewrite justifications, check the verification box, and download your **ATS-friendly PDF** and **Visual Audit report**!
-
----
-
-## ⚡ Performance & Token Optimization
-
-By structurally shifting from consecutive, isolated prompts to consolidated combined payloads, we reduced network round-trip overhead and eliminated redundant text parsing.
-
-### 📊 Before vs. After Consolidation Ledger
-
-| Pipeline Stage       | Legacy Workflow (7 separate calls)                                               | Token Cost        | Consolidated Workflow (2 atomic calls)                      | Token Cost        | Performance Gain                                                                   |
-| :------------------- | :------------------------------------------------------------------------------- | :---------------- | :---------------------------------------------------------- | :---------------- | :--------------------------------------------------------------------------------- |
-| **Stage 1: Analyze** | 1. Resume parsing<br>2. JD extraction<br>3. Original scoring<br>4. Original gaps | ~2,400 tokens     | 1. Combined Analyze Prompt (`buildCombinedAnalyzeMessages`) | **~600 tokens**   | **~75.0% Reduction**<br>Sends raw text once; caps input strings at 3,500 chars.    |
-| **Stage 2: Tailor**  | 5. Bullet rewriting<br>6. Tailored scoring<br>7. Tailored gaps                   | ~2,000 tokens     | 2. Combined Tailor Prompt (`buildCombinedTailorMessages`)   | **~400 tokens**   | **~80.0% Reduction**<br>Assembles summary, rewrites bullets, & scores in one pass. |
-| **Total Pipeline**   | **7 sequential calls**                                                           | **~4,400 tokens** | **2 combined calls**                                        | **~1,000 tokens** | **~77.3% Overall Token Savings!**                                                  |
-
----
-
-## 🧪 Testing
-
-The engine is protected by a comprehensive suite of Vitest contract and unit tests validating parsing robustness, rate limits, PDF generation, and fuzzy audits.
-
-To run all unit tests:
+The fastest way to run app + MySQL together:
 
 ```bash
-npm run test
+cp .env.example .env
+# Edit .env with GROQ_API_KEY, JWT_SECRET, DATABASE_URL
+
+docker compose up -d --build
 ```
 
-To run tests without the interactive watch loop (perfect for CI/CD checks):
+Then apply migrations inside the DB container:
 
 ```bash
-npm run test -- --watch=false
+docker compose exec db mysql -uroot -proot resume_shapeshifter < drizzle/0000_sweet_doctor_strange.sql
+docker compose exec db mysql -uroot -proot resume_shapeshifter < drizzle/0001_resume_history.sql
 ```
 
----
+App available at **[http://localhost:3000](http://localhost:3000)**.
 
-## ☁️ Deploying to Vercel
-
-`Resume Shapeshifter` is fully optimized for **Vercel** serverless deployment with zero configuration required.
-
-### 🛠️ Step-by-Step Vercel Deployment
-
-1. **Import the Repository:**
-   - Go to your [Vercel Dashboard](https://vercel.com/) and click **"Add New"** > **"Project"**.
-   - Connect your GitHub account and import your repository: `Suryxbg/Resume_Shapeshifter`.
-
-2. **Configure Build Settings:**
-   - Vercel will automatically detect **Next.js** as the framework.
-   - Leave the **Build Command** (`npm run build`), **Output Directory** (default), and **Install Command** (default) as they are.
-
-3. **Configure Environment Variables:**
-   - Expand the **"Environment Variables"** dropdown and add the following key-value pairs (see details below).
-
-4. **Deploy:**
-   - Click **"Deploy"**. Vercel will build and host your application in under a minute!
+See [`docs/docker_prep.md`](docs/docker_prep.md) for full Docker CLI instructions.
 
 ---
 
-### ⚙️ Vercel Environment Variables Checklist
+## One-Click Demo
 
-Here is the exhaustive checklist of environment variables you can configure in the Vercel console:
-
-| Variable Name        | Required?        | Default Value             | Description / Purpose                                                                                                                                             |
-| :------------------- | :--------------- | :------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`GROQ_API_KEY`**   | **Yes (for AI)** | _None_                    | Your live API key from the [Groq Console](https://console.groq.com/). If omitted, the app gracefully falls back to **Mock Demo mode** using safe sample fixtures. |
-| **`GROQ_MODEL`**     | No               | `llama-3.3-70b-versatile` | The LLM model used for resume analysis and atomic bullet rewriting. We recommend `llama-3.3-70b-versatile` or `llama-3.1-8b-instant`.                             |
-| **`PDF_FORCE_MOCK`** | No               | `false`                   | Force standard high-fidelity ATS mock PDF buffers (useful for stable, serverless runs).                                                                           |
-| **`LLM_FORCE_MOCK`** | No               | `false`                   | Forces local mock LLM responses even if `GROQ_API_KEY` is active (useful for demo/debugging).                                                                     |
-| **`DATABASE_URL`**   | **Yes (for DB)** | _None_                    | MySQL database connection string. Required for user accounts and data persistence.                                                                                |
-| **`JWT_SECRET`**     | **Yes (for Auth)**| _None_                    | Secret key for signing and verifying JSON Web Tokens.                                                                                                             |
+1. Go to [http://localhost:3000/tool](http://localhost:3000/tool)
+2. Click **Load sample data**
+3. Click **Analyze** — view match score and gap analysis
+4. Click **Generate tailored resume** — see side-by-side bullet diffs
+5. Check the **Mandatory Verification Gate**
+6. Download **ATS-Tailored Resume PDF** and **Comparison PDF**
+7. (Optional) Click **Sign Up** on the save banner to persist the resume to your account
 
 ---
 
-### 💡 Serverless Deployment Architecture Notes
+## Performance & Token Optimization
 
-- **Graceful Headless Browser Fallback:** Since standard serverless platforms like Vercel do not include local Chrome/Edge installations (which Puppeteer requires), the application is designed to **automatically detect** the missing browser path and **gracefully fall back** to generating a lightweight, standard ATS-compliant mock PDF buffer. This keeps the application 100% stable, lightning-fast, and cost-free without needing expensive browserless.io endpoints or heavy browser binaries.
-- **Serverless Rate Limiting:** The built-in rate-limiter utilizes an in-memory sliding window. In Vercel's serverless environment, each container instance scales and tracks rate limits independently, which is ideal for portfolio applications.
-
----
-
-## 📜 Architectural Insights
-
-- For deep technical breakdowns, rate limits, schema details, and fuzzy validation mathematical models, check out [`architecture.md`](architecture.md).
-- For exact token footprint logs, prompt strategies, and check-lists, see [`apitoken.md`](apitoken.md).
-- For edge cases, boundary parameters, and ingestion constraints, check out [`edge-case.md`](edge-case.md).
+| Stage    | Legacy (7 calls) | Consolidated (2 calls) | Token savings |
+| -------- | ---------------- | ---------------------- | ------------- |
+| Analyze  | ~2,400 tokens    | ~600 tokens            | ~75%          |
+| Tailor   | ~2,000 tokens    | ~400 tokens            | ~80%          |
+| **Total**| **~4,400**       | **~1,000**             | **~77%**      |
 
 ---
 
-_Developed with 🧬 for elite candidate resume optimization workflows._
+## Testing
+
+```bash
+npm run test          # Run all 34 Vitest tests
+npm run build         # Production build + type check
+npm run lint          # ESLint
+```
+
+Test coverage includes: schema contracts, JSON extract/repair, ingest magic-bytes, resume assembly, guardrails, rate limiting, PDF export, and resume text assembly.
+
+---
+
+## Deploying to Vercel
+
+1. Import [Suryxbg/Resume_Shapeshifter](https://github.com/Suryxbg/Resume_Shapeshifter) in the Vercel dashboard
+2. Framework preset: **Next.js** (auto-detected)
+3. Add environment variables:
+
+| Variable       | Required       | Description                                              |
+| -------------- | -------------- | -------------------------------------------------------- |
+| `GROQ_API_KEY` | For live AI    | Groq API key; omit for mock demo mode                      |
+| `GROQ_MODEL`   | No             | Default: `llama-3.3-70b-versatile`                       |
+| `DATABASE_URL` | For auth/save  | MySQL connection string (use PlanetScale, Railway, etc.) |
+| `JWT_SECRET`   | For auth       | Secret for signing JWT cookies                           |
+| `LLM_FORCE_MOCK` | No           | Force mock LLM even with a key set                       |
+
+**Serverless notes:**
+
+- PDF export falls back to plain-text PDF when no Chromium is available (standard on Vercel)
+- Rate limiting uses per-instance in-memory buckets (suitable for portfolio scale)
+- Use an external MySQL provider for `DATABASE_URL` — Vercel does not include MySQL
+
+---
+
+## Documentation
+
+| Document | Description |
+| -------- | ----------- |
+| [`docs/architecture.md`](docs/architecture.md) | System design, data contracts, PDF pipeline, risks |
+| [`docs/context.md`](docs/context.md) | Product requirements and acceptance criteria |
+| [`docs/implementation-plan.md`](docs/implementation-plan.md) | Phase-wise build plan |
+| [`docs/progress.md`](docs/progress.md) | Implementation completion log |
+| [`docs/edge-case.md`](docs/edge-case.md) | Edge cases and mitigations by phase |
+| [`docs/docker_prep.md`](docs/docker_prep.md) | Docker deployment guide |
+| [`docs/apitoken.md`](docs/apitoken.md) | Token optimization ledger |
+
+---
+
+## Tech Stack
+
+| Layer        | Technology                                      |
+| ------------ | ----------------------------------------------- |
+| Framework    | Next.js 15 (App Router), React 19, TypeScript   |
+| Styling      | Tailwind CSS                                    |
+| LLM          | Groq API (OpenAI-compatible), native fetch      |
+| Validation   | Zod                                             |
+| Database     | MySQL 8, Drizzle ORM                            |
+| Auth         | JWT (jose), bcryptjs, HTTP-only cookies         |
+| PDF          | puppeteer-core + plain-text fallback            |
+| Ingestion    | pdf-parse, mammoth                              |
+| Testing      | Vitest                                          |
+| Containers   | Docker, Docker Compose                          |
+
+---
+
+## Implementation Status
+
+All MVP phases (0–6) are complete:
+
+- Foundation, schemas, and mock pipeline
+- Full UI vertical slice
+- Groq LLM integration with mock fallback
+- PDF/DOCX ingestion with magic-byte checks
+- Server-side PDF export (Chrome + serverless fallback)
+- Guardrails, consistency audits, review gate, rate limiting
+- Demo polish, sample data, documentation
+- **Guest mode + save-to-account workflow**
+- **Resume history persistence**
+- **Codebase reorganized into domain folders**
+
+---
+
+_Developed for truthful, evidence-based resume optimization — always review AI output before applying._

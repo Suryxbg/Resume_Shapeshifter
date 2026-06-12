@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRun } from "@/lib/run-store";
+import { getRun } from "@/lib/stores/run-store";
 
 type RouteContext = { params: Promise<{ id: string }> };
 

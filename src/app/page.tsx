@@ -50,7 +50,7 @@ export default function HomePage() {
           <code className="rounded bg-zinc-200 px-1">POST /api/validate</code>,{" "}
           <code className="rounded bg-zinc-200 px-1">POST /api/runs</code>. See{" "}
           <code className="rounded bg-zinc-200 px-1">README.md</code> and{" "}
-          <code className="rounded bg-zinc-200 px-1">progress.md</code>.
+          <code className="rounded bg-zinc-200 px-1">docs/progress.md</code>.
         </p>
       </section>
     </main>

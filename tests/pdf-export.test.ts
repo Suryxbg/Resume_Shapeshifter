@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createRun, getRun, patchTailoringRun } from "@/lib/run-store";
+import { createRun, getRun, patchTailoringRun } from "@/lib/stores/run-store";
 import {
   buildTailoredResumeHtml,
   buildComparisonHtml,

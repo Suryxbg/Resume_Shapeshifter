@@ -3,18 +3,33 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-export function AuthButtons({ user }: { user: { email: string } | null }) {
+export function AuthButtons({
+  user,
+}: {
+  user: { email: string; userId?: string } | null;
+}) {
   const router = useRouter();
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.refresh(); // refresh the server component
+    router.refresh();
   };
 
   if (user) {
     return (
       <div className="flex items-center gap-4 border-l border-zinc-200 pl-4 ml-2">
-        <span className="text-sm text-zinc-600">{user.email}</span>
+        <Link
+          href="/resumes"
+          className="text-sm font-medium text-zinc-600 hover:text-zinc-900"
+        >
+          My Resumes
+        </Link>
+        <Link
+          href="/profile"
+          className="text-sm font-medium text-zinc-600 hover:text-zinc-900"
+        >
+          Profile
+        </Link>
         <button
           onClick={handleLogout}
           className="text-sm font-medium text-red-600 hover:text-red-700"
@@ -27,14 +42,17 @@ export function AuthButtons({ user }: { user: { email: string } | null }) {
 
   return (
     <div className="flex items-center gap-4 border-l border-zinc-200 pl-4 ml-2">
-      <Link href="/login" className="text-sm font-medium text-zinc-600 hover:text-zinc-900">
-        Log in
+      <Link
+        href="/login"
+        className="text-sm font-medium text-zinc-600 hover:text-zinc-900"
+      >
+        Login
       </Link>
       <Link
         href="/signup"
         className="rounded-md bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-800"
       >
-        Sign up
+        Sign Up
       </Link>
     </div>
   );

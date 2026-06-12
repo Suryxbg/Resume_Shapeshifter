@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { createRun, getMap, getRun, patchTailoringRun } from "@/lib/run-store";
+import { createRun, getMap, getRun, patchTailoringRun } from "@/lib/stores/run-store";
 import {
   generatePdf,
   buildTailoredResumeHtml,
   buildComparisonHtml,
 } from "@/lib/pdf";
 
-import { getClientIp, checkRateLimit } from "@/lib/rate-limit";
+import { getClientIp, checkRateLimit } from "@/lib/utils/rate-limit";
 
 // In-memory idempotency cache for the MVP
 const idempotencyCache = new Map<

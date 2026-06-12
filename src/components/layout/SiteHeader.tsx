@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { verifyToken } from "@/lib/jwt";
-import { AuthButtons } from "./AuthButtons";
+import { verifyToken } from "@/lib/auth/jwt";
+import { AuthButtons } from "@/components/auth/AuthButtons";
 
 export async function SiteHeader() {
   const cookieStore = await cookies();
@@ -9,7 +9,10 @@ export async function SiteHeader() {
   let user = null;
 
   if (token) {
-    user = await verifyToken(token);
+    const payload = await verifyToken(token);
+    if (payload) {
+      user = { email: payload.email, userId: payload.userId };
+    }
   }
 
   return (

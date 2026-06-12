@@ -53,3 +53,41 @@ export const TailorResponseSchema = z.object({
 });
 
 export type TailorResponse = z.infer<typeof TailorResponseSchema>;
+
+export const SaveResumeRequestSchema = z.object({
+  tailoringRunId: z.string().uuid(),
+  resumeText: z.string().min(1),
+  jdText: z.string().min(1),
+  analyze: AnalyzeResponseSchema,
+  tailor: TailorResponseSchema,
+});
+
+export type SaveResumeRequest = z.infer<typeof SaveResumeRequestSchema>;
+
+export const ResumeHistoryItemSchema = z.object({
+  id: z.string().uuid(),
+  jobTitle: z.string(),
+  companyName: z.string().nullable(),
+  atsScore: z.number().nullable(),
+  tailoringRunId: z.string().uuid().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export type ResumeHistoryItem = z.infer<typeof ResumeHistoryItemSchema>;
+
+export const ResumeHistoryDetailSchema = ResumeHistoryItemSchema.extend({
+  originalResumeText: z.string(),
+  jobDescriptionText: z.string(),
+  generatedResumeText: z.string(),
+  runData: z
+    .object({
+      resumeText: z.string(),
+      jdText: z.string(),
+      analyze: AnalyzeResponseSchema,
+      tailor: TailorResponseSchema,
+    })
+    .nullable(),
+});
+
+export type ResumeHistoryDetail = z.infer<typeof ResumeHistoryDetailSchema>;

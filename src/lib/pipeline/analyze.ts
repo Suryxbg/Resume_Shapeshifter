@@ -1,16 +1,16 @@
-import type { AnalyzeResponse } from "@/lib/api-types";
-import { resolveInferenceMode, type InferenceMode } from "@/lib/llm-config";
+import type { AnalyzeResponse } from "@/lib/api/types";
+import { resolveInferenceMode, type InferenceMode } from "@/lib/llm/config";
 import { completeJson } from "@/lib/llm";
 import {
   buildMockGapAnalysis,
   buildMockJobDescriptionProfile,
   buildMockMatchOriginal,
   buildMockResumeProfile,
-} from "@/lib/mock-data";
-import { logPipelineStage } from "@/lib/pipeline-logger";
-import { preprocessMatchScore } from "@/lib/llm-preprocess";
-import { createRun, patchTailoringRun } from "@/lib/run-store";
-import { capInputText } from "@/lib/text-limits";
+} from "@/lib/data/mock-data";
+import { logPipelineStage } from "@/lib/utils/pipeline-logger";
+import { preprocessMatchScore } from "@/lib/llm/preprocess";
+import { createRun, patchTailoringRun } from "@/lib/stores/run-store";
+import { capInputText } from "@/lib/ingest/text-limits";
 import { z } from "zod";
 import {
   GapAnalysisSchema,

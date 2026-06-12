@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { formatZodError } from "@/lib/api-errors";
+import { formatZodError } from "@/lib/api/errors";
 import {
   GapAnalysisSchema,
   JobDescriptionProfileSchema,

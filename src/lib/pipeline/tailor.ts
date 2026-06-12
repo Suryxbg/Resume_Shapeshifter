@@ -1,26 +1,26 @@
-import type { TailorResponse } from "@/lib/api-types";
+import type { TailorResponse } from "@/lib/api/types";
 import { LlmError } from "@/lib/llm";
-import { resolveInferenceMode, type InferenceMode } from "@/lib/llm-config";
+import { resolveInferenceMode, type InferenceMode } from "@/lib/llm/config";
 import { completeJson } from "@/lib/llm";
 import {
   buildMockGapAnalysis,
   buildMockMatchTailored,
   buildMockTailoredResume,
-} from "@/lib/mock-data";
-import { logPipelineStage } from "@/lib/pipeline-logger";
+} from "@/lib/data/mock-data";
+import { logPipelineStage } from "@/lib/utils/pipeline-logger";
 import {
   preprocessMatchScore,
   preprocessTailoredResume,
-} from "@/lib/llm-preprocess";
+} from "@/lib/llm/preprocess";
 import {
   createRun,
   getMap,
   getRun,
   patchTailoringRun,
   type RunRecord,
-} from "@/lib/run-store";
-import { assembleResumeForScoring } from "@/lib/resume-assembly";
-import { checkTailoringConsistency } from "@/lib/consistency";
+} from "@/lib/stores/run-store";
+import { assembleResumeForScoring } from "@/lib/resume/assembly";
+import { checkTailoringConsistency } from "@/lib/resume/consistency";
 import { z } from "zod";
 import {
   GapAnalysisSchema,

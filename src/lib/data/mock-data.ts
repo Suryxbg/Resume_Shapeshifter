@@ -3,11 +3,11 @@ import type { JobDescriptionProfile } from "@/schemas/jd";
 import type { MatchScore } from "@/schemas/match";
 import type { ResumeProfile } from "@/schemas/resume";
 import type { TailoredResume } from "@/schemas/tailored";
-import gapAnalysisFixture from "../../tests/fixtures/gap-analysis.json";
-import jobDescriptionFixture from "../../tests/fixtures/job-description-profile.json";
-import matchScoreFixture from "../../tests/fixtures/match-score.json";
-import resumeProfileFixture from "../../tests/fixtures/resume-profile.json";
-import tailoredResumeFixture from "../../tests/fixtures/tailored-resume.json";
+import gapAnalysisFixture from "../../../tests/fixtures/gap-analysis.json";
+import jobDescriptionFixture from "../../../tests/fixtures/job-description-profile.json";
+import matchScoreFixture from "../../../tests/fixtures/match-score.json";
+import resumeProfileFixture from "../../../tests/fixtures/resume-profile.json";
+import tailoredResumeFixture from "../../../tests/fixtures/tailored-resume.json";
 
 function clone<T>(v: T): T {
   return structuredClone(v) as T;
