@@ -18,11 +18,6 @@ export function AuthButtons({
   if (user) {
     return (
       <div className="flex items-center gap-4 border-l border-zinc-200 pl-4 ml-2">
-        {user.email.startsWith("ERROR:") && (
-          <span className="text-xs text-red-600 font-bold max-w-[200px] truncate" title={user.email}>
-            {user.email}
-          </span>
-        )}
         <Link
           href="/resumes"
           className="text-sm font-medium text-zinc-600 hover:text-zinc-900"

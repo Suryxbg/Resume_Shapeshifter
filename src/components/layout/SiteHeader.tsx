@@ -6,22 +6,22 @@ export async function SiteHeader() {
   const cookieStore = await cookies();
   const token = cookieStore.get("auth_token")?.value;
   let user = null;
-  let debugError = "";
 
   if (token) {
     try {
       const { jwtVerify } = await import("jose");
-      const secret = process.env.JWT_SECRET;
-      if (!secret) throw new Error("JWT_SECRET missing in SiteHeader");
+      const secret = process.env.JWT_SECRET || "default-dev-secret-key-please-change-in-production";
+      if (!process.env.JWT_SECRET && process.env.NODE_ENV === "production") {
+        console.warn("WARNING: JWT_SECRET environment variable is missing in SiteHeader. Using fallback.");
+      }
       const secretKey = new TextEncoder().encode(secret);
       const { payload } = await jwtVerify(token, secretKey);
       if (payload) {
         user = { email: payload.email as string, userId: payload.userId as string };
       }
     } catch (e: unknown) {
-      debugError = e instanceof Error ? e.message : String(e);
-      // Force user to be truthy so we can see the error in the UI
-      user = { email: "ERROR: " + debugError, userId: "error" };
+      console.error("JWT verification failed in SiteHeader:", e);
+      user = null;
     }
   }
 

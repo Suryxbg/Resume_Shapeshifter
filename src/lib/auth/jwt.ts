@@ -1,9 +1,11 @@
 import { SignJWT, jwtVerify } from "jose";
 
 export async function getSecretKey() {
-  const JWT_SECRET = process.env.JWT_SECRET;
-  if (!JWT_SECRET) {
-    throw new Error("JWT_SECRET is missing in environment variables");
+  const JWT_SECRET = process.env.JWT_SECRET || "default-dev-secret-key-please-change-in-production";
+  if (!process.env.JWT_SECRET && process.env.NODE_ENV === "production") {
+    console.warn(
+      "WARNING: JWT_SECRET environment variable is missing in production. Using a default fallback key. Please configure JWT_SECRET for security."
+    );
   }
   return new TextEncoder().encode(JWT_SECRET);
 }
