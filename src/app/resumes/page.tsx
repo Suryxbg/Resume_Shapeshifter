@@ -11,7 +11,15 @@ export default async function ResumesPage() {
     redirect("/login?returnTo=/resumes");
   }
 
-  let rows: any[] = [];
+  type ResumeRow = {
+    id: string;
+    jobTitle: string;
+    companyName: string | null;
+    atsScore: number | null;
+    createdAt: Date | null;
+  };
+
+  let rows: ResumeRow[] = [];
   let dbError = "";
 
   try {
@@ -26,9 +34,9 @@ export default async function ResumesPage() {
       .from(resumeHistory)
       .where(eq(resumeHistory.userId, user.id))
       .orderBy(desc(resumeHistory.createdAt));
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("DB Query failed:", error);
-    dbError = error.message || String(error);
+    dbError = error instanceof Error ? error.message : String(error);
   }
 
   if (dbError) {
