@@ -12,6 +12,9 @@ services:
       - GROQ_API_KEY=${GROQ_API_KEY}
       - GROQ_MODEL=${GROQ_MODEL:-llama-3.3-70b-versatile}
       - PDF_FORCE_MOCK=${PDF_FORCE_MOCK:-false}
+      # Override .env localhost — inside Compose the DB host is the service name `db`
+      - DATABASE_URL=mysql://root:root@db:3306/resume_shapeshifter
+      - JWT_SECRET=${JWT_SECRET}
     env_file:
       - .env
     depends_on:
