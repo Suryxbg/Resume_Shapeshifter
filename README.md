@@ -283,8 +283,8 @@ cp .env.example .env.local
 
 ```ini
 GROQ_API_KEY=gsk_your_actual_key_here
-GROQ_MODEL=llama-3.3-70b-versatile
-DATABASE_URL="mysql://root:root@localhost:3306/resume_shapeshifter"
+GROQ_MODEL=type the model that you choose
+DATABASE_URL="your database URL"
 JWT_SECRET="your-super-secret-jwt-key"
 ```
 
